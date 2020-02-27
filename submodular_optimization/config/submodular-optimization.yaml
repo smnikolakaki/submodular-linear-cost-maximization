@@ -1,0 +1,46 @@
+project:
+    project_name: "SubmodularOptimization"
+    project_logging_level: "INFO"
+
+    # ITHACA DIRS
+    DATA_DIR: "/research/data-x/submodular-optimization"  
+
+    # SOFIA DIRS
+    DATA_DIR: "/Users/smnikolakaki/Desktop/research/data-x/submodular-optimization"
+
+jobs:
+    job_list:
+        # - "process_guru_data"
+        # - "process_freelancer_data"
+        - "run_experiments"
+
+experiments:
+    expt_list:
+        # - "experiment_00"
+        - "experiment_01"
+
+algorithms:
+    cost_distorted_greedy_config:
+    cost_distorted_lazy_greedy_config:
+        epsilon: 0.1
+    cost_scaled_greedy_config:
+    cost_scaled_lazy_greedy_config:
+        epsilon: 0.1
+    distorted_greedy_config:
+    distorted_lazy_greedy_config:
+        epsilon: 0.1
+    stochastic_distorted_greedy_config:
+        epsilon: 0.01
+    unconstrained_distorted_greedy_config:
+
+experiment_configs:
+    experiment_00:
+        num_sampled_skills: 50
+        popular_threshold: 0.02
+        rare_threshold: 0.6
+        dataset: "guru"
+    experiment_01:
+        num_sampled_skills: 50
+        popular_threshold: 0.2
+        rare_threshold: 0.2
+        dataset: "guru"
