@@ -16,8 +16,10 @@ jobs:
 
 experiments:
     expt_list:
-        # - "experiment_00"
-        - "experiment_01"
+        - "experiment_00"
+        # - "experiment_01"
+        # - "experiment_00_parallel"
+        # - "experiment_01_parallel"
 
 algorithms:
     cost_distorted_greedy_config:
@@ -44,3 +46,13 @@ experiment_configs:
         popular_threshold: 0.2
         rare_threshold: 0.2
         dataset: "guru"
+    experiment_00_parallel:
+      num_sampled_skills: 50
+      popular_threshold: 0.2
+      rare_threshold: 0.2
+      dataset: "guru"
+    experiment_01_parallel:
+      num_sampled_skills: 50
+      popular_threshold: 0.2
+      rare_threshold: 0.2
+      dataset: "guru"

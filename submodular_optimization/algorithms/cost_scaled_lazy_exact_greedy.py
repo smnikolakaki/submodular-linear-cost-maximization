@@ -1,14 +1,15 @@
 """
-This class implements 2 * cost scaled greedy algorithm with lazy evaluation
-1/2 * (1 - epsilon) approximation
+This class implements 2 * cost scaled greedy algorithm with lazy exact evaluation
+1/2 * approximation
 """
 import logging
 import numpy as np
+import sys
 from heapq import heappush
 from heapq import heappop
 
 
-class CostScaledLazyGreedy(object):
+class CostScaledLazyExactGreedy(object):
     """
     2 * cost scaled greedy algorithm implementation using lazy evaluation
     """
@@ -26,9 +27,6 @@ class CostScaledLazyGreedy(object):
         self.submodular_func = submodular_func
         self.cost_func = cost_func
         self.E = E
-
-        # Epsilon is defined in the configuration file
-        self.epsilon = config['algorithms']['cost_scaled_lazy_greedy_config']['epsilon']
 
     def calc_marginal_gain(self, sol, e):
         """
@@ -63,11 +61,11 @@ class CostScaledLazyGreedy(object):
             # Multiplying inserted element with -1 to convert to min heap to max
             heappush(self.H, (-1 * new_gain, idx))
 
-    def find_lazy_greedy_eval_element(self, sol, k):
+    def find_lazy_exact_greedy_eval_element(self, sol, k):
         """
         Finds the greedy element e to add to the current solution sol
         :param sol:
-        :param k:
+        :param k:c
         :return e:
         """
 
@@ -76,38 +74,44 @@ class CostScaledLazyGreedy(object):
         # Perform lazy evaluation of elements in heap H
         while self.H:
             # Retrieving top element in the heap and computing its updated gain
-            (prev_gain, idx) = heappop(self.H)
-
-            # For k == 1 return the top element of the heap with the largest gain
-            if k == 1:
-                lazy_greedy_element = idx
-                return lazy_greedy_element
+            (prev_gain, idx) = heappop(self.H)              
 
             # Multiplying popped element with -1 to convert to its original gain
             prev_gain = -1 * prev_gain
 
+            # For k == 1 return the top element of the heap with the largest gain if that is positive
+            # else return None
+            if k == 1:
+                if prev_gain > 0:
+                    return idx
+                else:
+                    return None
+
             marginal_gain = self.calc_marginal_gain(sol.copy(), idx)
             new_gain = marginal_gain - rho * self.cost_func({idx})
-            submodular_score = self.submodular_func({idx})
 
-            if new_gain < self.epsilon * submodular_score:
-                continue
-            elif (new_gain >= self.epsilon * submodular_score) & (new_gain < (1 - self.epsilon) * prev_gain):
+            # If there is no element left in the heap
+            if not self.H:
+                # Return the popped element if the new gain is positive
+                if new_gain > 0:
+                    return idx
+                else:
+                    return None
+           
+            # Retrieving the outdated gain of the next element in the heap
+            (next_element_gain, next_element_idx) = self.H[0]
+            # Multiplying popped element with -1 to convert to its original gain
+            next_element_gain = -1 * next_element_gain
+
+            # For k != 1 do lazy exact greedy evaluation
+            if new_gain >= next_element_gain:
+                return idx
+            elif new_gain > 0:
+                # Multiplying inserted element with -1 to convert to min heap to max
                 heappush(self.H, (-1 * new_gain, idx))
             else:
-                lazy_greedy_element = idx
-                return lazy_greedy_element
-
-            # # For k != 1 do lazy greedy evaluation
-            # if new_gain >= (1 - self.epsilon) * prev_gain:
-            #     lazy_greedy_element = idx
-            #     return lazy_greedy_element
-            # elif new_gain >= self.epsilon * submodular_score:
-            #     # Multiplying inserted element with -1 to convert to min heap to max
-            #     heappush(self.H, (-1 * new_gain, idx))
-            # else:
-            #     # Removing the element from the heap
-            #     continue
+                # Removing the element from the heap
+                continue
 
         # If heap empties and there is no element satisfying the conditions return None
         return None
@@ -131,7 +135,7 @@ class CostScaledLazyGreedy(object):
         self.initialize_max_heap()
 
         for k in range(1, len(self.E)):
-            lazy_greedy_element = self.find_lazy_greedy_eval_element(curr_sol, k)
+            lazy_greedy_element = self.find_lazy_exact_greedy_eval_element(curr_sol,k)
 
             if lazy_greedy_element:
                 curr_sol.add(lazy_greedy_element)

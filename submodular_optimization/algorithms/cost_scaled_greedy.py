@@ -60,7 +60,9 @@ class CostScaledGreedy(object):
         :param k:
         :return e:
         """
+
         greedy_element = max(E, key=lambda x: self.greedy_criterion(sol.copy(), x, k))
+  
         return greedy_element
 
     def run(self):

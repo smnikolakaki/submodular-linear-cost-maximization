@@ -7,7 +7,9 @@ from timeit import default_timer as timer
 from algorithms.cost_distorted_greedy import CostDistortedGreedy
 from algorithms.distorted_greedy import DistortedGreedy
 from algorithms.cost_scaled_greedy import CostScaledGreedy
+from algorithms.unconstrained_linear import UnconstrainedLinear
 from algorithms.cost_scaled_lazy_greedy import CostScaledLazyGreedy
+from algorithms.cost_scaled_lazy_exact_greedy import CostScaledLazyExactGreedy
 from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.cost_distorted_lazy_greedy import CostDistortedLazyGreedy
@@ -28,7 +30,7 @@ class AlgorithmDriver(object):
         self.logger = logging.getLogger("so_logger")
 
     def run(self, config, data, algorithm, sample_epsilon, lazy_epsilon, scaling_factor, num_sampled_skills,
-            rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio):
+            rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio, seed):
         """run
 
         :param config:
@@ -44,7 +46,7 @@ class AlgorithmDriver(object):
         :param popular_threshold:
         :param user_sample_ratio:
         """
-        np.random.seed(seed=0)
+        np.random.seed(seed=seed)
         data.sample_skills_to_be_covered_controlled(num_sampled_skills, rare_sample_fraction,
                                                     popular_sample_fraction, rare_threshold,
                                                     popular_threshold, user_sample_ratio)
@@ -59,9 +61,15 @@ class AlgorithmDriver(object):
         elif algorithm == "cost_scaled_greedy":
             alg = CostScaledGreedy(config, data.submodular_func, data.cost_func, data.E)
 
+        elif algorithm == "unconstrained_linear":
+            alg = UnconstrainedLinear(config, data.submodular_func, data.cost_func, data.E)
+
         elif algorithm == "cost_scaled_lazy_greedy":
             config['algorithms']['cost_scaled_lazy_greedy_config']['epsilon'] = lazy_epsilon
             alg = CostScaledLazyGreedy(config, data.submodular_func, data.cost_func, data.E)
+
+        elif algorithm == "cost_scaled_lazy_exact_greedy":
+            alg = CostScaledLazyExactGreedy(config, data.submodular_func, data.cost_func, data.E)
 
         elif algorithm == "stochastic_distorted_greedy":
             config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
@@ -77,6 +85,7 @@ class AlgorithmDriver(object):
         elif algorithm == "distorted_lazy_greedy":
             config['algorithms']['distorted_lazy_greedy_config']['epsilon'] = lazy_epsilon
             alg = DistortedLazyGreedy(config, data.submodular_func, data.cost_func, data.E)
+
         else:
             self.logger.info("Algorithm is not implemented")
 
@@ -100,6 +109,7 @@ class AlgorithmDriver(object):
                   'num_rare_skills': data.num_rare_skills,
                   'num_common_skills': data.num_common_skills,
                   'num_popular_skills': data.num_popular_skills,
-                  'num_sampled_skills': num_sampled_skills
+                  'num_sampled_skills': num_sampled_skills,
+                  'seed': seed
                   }
         return result

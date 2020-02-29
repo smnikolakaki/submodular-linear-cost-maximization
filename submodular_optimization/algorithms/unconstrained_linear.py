@@ -1,25 +1,27 @@
 """
-This class implements greedy algorithm - (1 - 1/e) approximation
+This class implements 2 * unconstrained linear
+1/2 approximation
 """
 import logging
 
 
-class SetCoverGreedy(object):
+class UnconstrainedLinear(object):
     """
-    Set Cover Greedy Algorithm implementation
+    unconstrained linear approximation 
     """
-    def __init__(self, config, submodular_func, E):
+    def __init__(self, config, submodular_func, cost_func, E):
         """
         Constructor
         :param config:
         :param submodular_func:
+        :param cost_func:
         :param E -- a python set:
         :return:
         """
         self.config = config
         self.logger = logging.getLogger("so_logger")
         self.submodular_func = submodular_func
-        self.scaling_factor = 1
+        self.cost_func = cost_func
         self.E = E
 
     def calc_marginal_gain(self, sol, e):
@@ -42,19 +44,12 @@ class SetCoverGreedy(object):
         :param e:
         :return greedy_contrib:
         """
+        # Weight scaling is constant
+        rho = 2
         marginal_gain = self.calc_marginal_gain(sol, e)
-        greedy_contrib = marginal_gain
+        weighted_cost = rho * self.cost_func(set({e}))
+        greedy_contrib = marginal_gain - weighted_cost
         return greedy_contrib
-
-    def find_greedy_element(self, E, sol):
-        """
-        Finds the greedy element e to add to the current solution sol
-        :param E:
-        :param sol:
-        :return e:
-        """
-        greedy_element = max(E, key=lambda x: self.greedy_criterion(sol.copy(), x))
-        return greedy_element
 
     def run(self):
         """
@@ -65,14 +60,13 @@ class SetCoverGreedy(object):
         # We set k = n
         k = len(self.E)
         curr_sol = set([])
-
+        
         for i in range(0, k):
-            greedy_element = self.find_greedy_element(self.E, curr_sol)
+            greedy_element = i
             if self.greedy_criterion(curr_sol.copy(), greedy_element) > 0:
                 curr_sol.add(greedy_element)
 
-        curr_val = self.submodular_func(curr_sol)
-        print('Set cover score:',curr_val)
-        # self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
+        curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)
+        self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
 
         return curr_sol

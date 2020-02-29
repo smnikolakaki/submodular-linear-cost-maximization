@@ -129,6 +129,7 @@ class GuruData(object):
         :param popular_threshold:
         :param user_sample_fraction:
         """
+
         self.sample_users(user_sample_fraction)
 
         df_users = pd.DataFrame(self.users)
@@ -232,14 +233,14 @@ class GuruData(object):
             cost += self.cost_vector[user_id]
         return cost
 
-    def scaling_func(self, sol_size, cost):
+    def scaling_func(self, sol_value, cost):
         """
         Scaling factor function
         :param sol_size:
         :param cost:
         :return scaling_factor:
         """
-        scaling_factor = cost / sol_size
+        scaling_factor = cost / sol_value
         if scaling_factor <= 0:
             scaling_factor = 1
         return scaling_factor

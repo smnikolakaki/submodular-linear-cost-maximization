@@ -1,19 +1,15 @@
 """
 This class implements experiment_00
 
-Experiment 00 involves testing all algorithms parallely for various values of algorithm specific parameters
 """
 
 import logging
-import numpy as np
 import pandas as pd
-from pathos.pools import ProcessPool
-import multiprocessing as mp
+import numpy as np
 from data.data_provider import DataProvider
 from data.data_exporter import DataExporter
 from algorithms.algorithm_driver import AlgorithmDriver
 from algorithms.set_cover_greedy import SetCoverGreedy
-
 
 class Experiment00(object):
     """
@@ -23,6 +19,7 @@ class Experiment00(object):
     def __init__(self, config):
         """
         Constructor
+
         :param config:
         :return:
         """
@@ -32,11 +29,23 @@ class Experiment00(object):
         self.data_exporter = DataExporter(self.config)
 
     @staticmethod
-    def run_algorithm(arg):
+    def run_algorithm(args):
         # Run algorithm
         alg = AlgorithmDriver()
-        data = alg.run(*arg)
+        data = alg.run(*args)
         return data
+
+    def set_scaling_factor(self,data):
+
+        # Find appropriate scaling factor
+        alg = SetCoverGreedy(self.config, data.submodular_func, data.E)
+        sol = alg.run()
+        submodular_val = data.submodular_func(sol)
+        cost = data.cost_func(sol)
+        scaling_factor = data.scaling_func(submodular_val, cost)
+
+        # Update scaling factor
+        data.scaling_factor = scaling_factor
 
     def run(self):
         """
@@ -47,111 +56,93 @@ class Experiment00(object):
         self.logger.info("Starting experiment 00")
 
         self.expt_config = self.config['experiment_configs']['experiment_00']
-        num_sampled_skills = self.expt_config['num_sampled_skills']
         popular_threshold = self.expt_config['popular_threshold']
         rare_threshold = self.expt_config['rare_threshold']
 
-        user_sample_ratios = [0.01, 0.1, 0.3]
-        rare_sample_fraction = 0.1
-        popular_sample_fraction = 0.1
-        lazy_eval_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
+        user_sample_ratios = [0.005,0.1,0.2,0.3,0.4]
+        seeds = [i for i in range(6,11)]
+        # lazy_eval_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
         sampling_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
 
-        # Load dataset
-        data = self.data_provider.read_guru_data_obj()
+        num_sampled_skills = 50
+        rare_sample_fraction = 0.1
+        popular_sample_fraction = 0.1
+        scaling_factor = 800
 
-        # Create different configurations for algorithms
-        args = []
-        for user_sample_ratio in user_sample_ratios:
-            np.random.seed(seed=0)
+        alg = AlgorithmDriver()
+        results = []
+        for seed in seeds:
+            for user_sample_ratio in user_sample_ratios:
+                self.logger.info("Experiment for user sample ratio: {} and scaling factor: {}".format(user_sample_ratio,scaling_factor))
 
-            # Create controlled samples dataset
-            data.sample_skills_to_be_covered_controlled(num_sampled_skills, rare_sample_fraction,
-                                                        popular_sample_fraction, rare_threshold,
-                                                        popular_threshold, user_sample_ratio)
+                # Load dataset
+                data = self.data_provider.read_guru_data_obj()
 
-            # Find appropriate scaling factor
-            alg = SetCoverGreedy(self.config, data.submodular_func, data.E)
-            sol = alg.run()
-            submodular_val = data.submodular_func(sol)
-            cost = data.cost_func(sol)
-            scaling_factor = data.scaling_func(submodular_val, cost)
+                # # Create controlled samples dataset
+                # data.sample_skills_to_be_covered_controlled(num_sampled_skills, rare_sample_fraction,
+                #                                         popular_sample_fraction, rare_threshold,
+                #                                         popular_threshold, user_sample_ratio)
 
-            # Update scaling factor
-            data.scaling_factor = scaling_factor
-            self.logger.info("Scaling factor for submodular function is: {}".format(data.scaling_factor))
+                # # Setting scaling factor of coverage as coverage(S)/cost(S) for set cover solution S
+                # self.set_scaling_factor(data)
 
-            # Cost distorted greedy
-            args.append((self.config, data, "cost_distorted_greedy",
-                         None, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio))
 
-            # Cost scaled greedy
-            args.append((self.config, data, "cost_scaled_greedy",
-                         None, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio))
+                self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
 
-            # Distorted greedy
-            args.append((self.config, data, "distorted_greedy",
-                         None, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio))
+                # Dstorted greedy - ICML
+                config = self.config.copy()
+                result = alg.run(self.config, data, "distorted_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio,seed)
+                results.append(result)
 
-            # Unconstrained distorted greedy
-            for i in range(100):
-                args.append((self.config, data, "unconstrained_distorted_greedy",
-                             None, None, scaling_factor, num_sampled_skills,
+                # Cost scaled greedy
+                config = self.config.copy()
+                result = alg.run(self.config, data, "cost_scaled_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio,seed)
+                results.append(result)
+
+                # Cost scaled lazy exact greedy
+                config = self.config.copy()
+                result = alg.run(config, data, "cost_scaled_lazy_exact_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio,seed)
+                results.append(result)
+
+                # Unconstrained Linear 
+                config = self.config.copy()
+                result = alg.run(config, data, "unconstrained_linear",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio,seed)
+                results.append(result)
+
+                # Unconstrained distorted greedy
+                config = self.config.copy()
+                for i in range(100):
+                    result = alg.run(config, data, "unconstrained_distorted_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio,seed)
+                    results.append(result)
+
+                # Stochastic distorted greedy
+                config = self.config.copy()
+                for sample_epsilon in sampling_epsilon_values:
+                    for i in range(50):
+                        config = self.config.copy()
+                        config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                        result = alg.run(config, data, "stochastic_distorted_greedy",
+                             sample_epsilon, None, scaling_factor, num_sampled_skills,
                              rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio))
+                             user_sample_ratio,seed)
+                        results.append(result)
 
-            # LAZY EVALUATION ALGORITHMS
-
-            # Cost scaled lazy greedy and Distorted lazy greedy
-            for lazy_epsilon in lazy_eval_epsilon_values:
-                config = self.config.copy()
-                config['algorithms']['cost_scaled_lazy_greedy_config']['epsilon'] = lazy_epsilon
-                args.append(
-                    (self.config, data, "cost_scaled_lazy_greedy",
-                     None, lazy_epsilon, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio)
-                )
-
-                config = self.config.copy()
-                config['algorithms']['distorted_lazy_greedy_config']['epsilon'] = lazy_epsilon
-                args.append(
-                    (self.config, data, "distorted_lazy_greedy",
-                     None, lazy_epsilon, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio)
-                )
-
-            # SAMPLING BASED ALGORITHMS
-
-            # Stochastic distorted greedy
-            for sample_epsilon in sampling_epsilon_values:
-                for i in range(50):
-                    config = self.config.copy()
-                    config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-                    args.append(
-                        (self.config, data, "stochastic_distorted_greedy",
-                         sample_epsilon, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio)
-                    )
-
-        # Create a pool of processes
-        num_processes = mp.cpu_count()
-        self.logger.info("Processes: {}".format(num_processes))
-        pool = ProcessPool(nodes=num_processes)
-
-        # Run the algorithms
-        results = pool.amap(self.run_algorithm, args).get()
-        pool.terminate()
-        pool.join()
-        pool.clear()
+                self.logger.info("\n")
 
         self.logger.info("Finished experiment 00")
 
