@@ -133,7 +133,7 @@ class Experiment00(object):
                 # Stochastic distorted greedy
                 config = self.config.copy()
                 for sample_epsilon in sampling_epsilon_values:
-                    for i in range(50):
+                    for i in range(10):
                         config = self.config.copy()
                         config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
                         result = alg.run(config, data, "stochastic_distorted_greedy",
