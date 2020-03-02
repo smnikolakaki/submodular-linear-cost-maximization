@@ -4,6 +4,7 @@ This class runs the experiments
 import logging
 from experiments.experiment_00 import Experiment00
 from experiments.experiment_01 import Experiment01
+from experiments.experiment_02 import Experiment02
 from experiments.experiment_00_parallel import Experiment00P
 from experiments.experiment_01_parallel import Experiment01P
 
@@ -39,6 +40,9 @@ class ExperimentDriver(object):
                 expt.run()
             if expt_name == "experiment_01":
                 expt = Experiment01(self.config)
+                expt.run()
+            if expt_name == "experiment_02":
+                expt = Experiment02(self.config)
                 expt.run()
             if expt_name == "experiment_00_parallel":
                 expt = Experiment00P(self.config)

@@ -14,7 +14,7 @@ from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.cost_distorted_lazy_greedy import CostDistortedLazyGreedy
 from algorithms.distorted_lazy_greedy import DistortedLazyGreedy
-
+from algorithms.constrained_distorted_greedy import ConstrainedDistortedGreedy
 
 class AlgorithmDriver(object):
     """
@@ -30,7 +30,7 @@ class AlgorithmDriver(object):
         self.logger = logging.getLogger("so_logger")
 
     def run(self, config, data, algorithm, sample_epsilon, lazy_epsilon, scaling_factor, num_sampled_skills,
-            rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio, seed):
+            rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio, seed, k):
         """run
 
         :param config:
@@ -86,6 +86,9 @@ class AlgorithmDriver(object):
             config['algorithms']['distorted_lazy_greedy_config']['epsilon'] = lazy_epsilon
             alg = DistortedLazyGreedy(config, data.submodular_func, data.cost_func, data.E)
 
+        elif algorithm == "constrained_distorted_greedy":
+            alg = ConstrainedDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
+
         else:
             self.logger.info("Algorithm is not implemented")
 
@@ -93,6 +96,7 @@ class AlgorithmDriver(object):
         start = timer()
         sol = alg.run()
         end = timer()
+
         submodular_val = data.submodular_func(sol)
         cost = data.cost_func(sol)
         val = submodular_val - cost
@@ -110,6 +114,7 @@ class AlgorithmDriver(object):
                   'num_common_skills': data.num_common_skills,
                   'num_popular_skills': data.num_popular_skills,
                   'num_sampled_skills': num_sampled_skills,
-                  'seed': seed
+                  'seed': seed,
+                  'k': k
                   }
         return result

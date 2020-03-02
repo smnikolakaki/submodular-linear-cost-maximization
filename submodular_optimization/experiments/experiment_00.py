@@ -59,10 +59,13 @@ class Experiment00(object):
         popular_threshold = self.expt_config['popular_threshold']
         rare_threshold = self.expt_config['rare_threshold']
 
-        user_sample_ratios = [0.005,0.1,0.2,0.3,0.4]
+        user_sample_ratios = [0.005,0.1,0.2,0.3,0.4,0.5]
         seeds = [i for i in range(6,11)]
+
+        # seeds = [i for i in range(6,11)]
+        seeds = [0]
         # lazy_eval_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
-        sampling_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
+        sampling_epsilon_values = [0.01]
 
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
@@ -89,12 +92,12 @@ class Experiment00(object):
 
                 self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
 
-                # Dstorted greedy - ICML
+                # Distorted greedy - ICML
                 config = self.config.copy()
                 result = alg.run(self.config, data, "distorted_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio,seed)
+                     user_sample_ratio, seed, None)
                 results.append(result)
 
                 # Cost scaled greedy
@@ -102,7 +105,7 @@ class Experiment00(object):
                 result = alg.run(self.config, data, "cost_scaled_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio,seed)
+                     user_sample_ratio, seed, None)
                 results.append(result)
 
                 # Cost scaled lazy exact greedy
@@ -110,7 +113,7 @@ class Experiment00(object):
                 result = alg.run(config, data, "cost_scaled_lazy_exact_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio,seed)
+                     user_sample_ratio, seed, None)
                 results.append(result)
 
                 # Unconstrained Linear 
@@ -118,29 +121,27 @@ class Experiment00(object):
                 result = alg.run(config, data, "unconstrained_linear",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio,seed)
+                     user_sample_ratio, seed, None)
                 results.append(result)
 
                 # Unconstrained distorted greedy
                 config = self.config.copy()
-                for i in range(100):
-                    result = alg.run(config, data, "unconstrained_distorted_greedy",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio,seed)
-                    results.append(result)
+                result = alg.run(config, data, "unconstrained_distorted_greedy",
+                 None, None, scaling_factor, num_sampled_skills,
+                 rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                 user_sample_ratio, seed, None)
+                results.append(result)
 
                 # Stochastic distorted greedy
                 config = self.config.copy()
                 for sample_epsilon in sampling_epsilon_values:
-                    for i in range(10):
-                        config = self.config.copy()
-                        config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-                        result = alg.run(config, data, "stochastic_distorted_greedy",
-                             sample_epsilon, None, scaling_factor, num_sampled_skills,
-                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio,seed)
-                        results.append(result)
+                    config = self.config.copy()
+                    config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                    result = alg.run(config, data, "stochastic_distorted_greedy",
+                         sample_epsilon, None, scaling_factor, num_sampled_skills,
+                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                         user_sample_ratio, seed, None)
+                    results.append(result)
 
                 self.logger.info("\n")
 

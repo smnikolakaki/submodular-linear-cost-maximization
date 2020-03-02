@@ -1,16 +1,15 @@
 """
-This class implements stochastic distorted greedy algorithm
-(1 - 1/e - epsilon) approximation in expectation
+This class implements distorted greedy algorithm
+(1 - 1/e) approximation in expectation
 """
 import logging
-import numpy as np
 
 
-class StochasticDistortedGreedy(object):
+class ConstrainedDistortedGreedy(object):
     """
-    StochasticDistored Greedy algorithm implementation
+    Distored Greedy algorithm implementation
     """
-    def __init__(self, config, submodular_func, cost_func, E):
+    def __init__(self, config, submodular_func, cost_func, E, k):
         """
         Constructor
         :param config:
@@ -24,16 +23,7 @@ class StochasticDistortedGreedy(object):
         self.submodular_func = submodular_func
         self.cost_func = cost_func
         self.E = E
-        self.epsilon = self.config['algorithms']['stochastic_distorted_greedy_config']['epsilon']
-
-    def calc_sample_size(self, k):
-        """
-        Calculates sample size for stochastic distorted greedy
-        :param k:
-        :return s:
-        """
-        s = np.ceil(len(self.E) / k * np.log(1 / self.epsilon))
-        return int(s)
+        self.k = k
 
     def calc_marginal_gain(self, sol, e):
         """
@@ -82,15 +72,12 @@ class StochasticDistortedGreedy(object):
         :param:
         :return best_sol:
         """
-        # We set k = n
-        k = len(self.E)
+
         curr_sol = set([])
 
-        for i in range(0, k):
-            s = self.calc_sample_size(k)
-            B = set(np.random.choice(list(self.E), size=s))
-            greedy_element = self.find_greedy_element(B, curr_sol, k, i)
-            if self.greedy_criterion(curr_sol.copy(), greedy_element, k, i) > 0:
+        for i in range(0, self.k):
+            greedy_element = self.find_greedy_element(self.E, curr_sol, self.k, i)
+            if self.greedy_criterion(curr_sol.copy(), greedy_element, self.k, i) > 0:
                 curr_sol.add(greedy_element)
 
         curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)

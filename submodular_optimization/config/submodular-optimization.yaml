@@ -18,6 +18,7 @@ experiments:
     expt_list:
         - "experiment_00"
         # - "experiment_01"
+        # - "experiment_02"
         # - "experiment_00_parallel"
         # - "experiment_01_parallel"
 
@@ -42,6 +43,11 @@ experiment_configs:
         rare_threshold: 0.6
         dataset: "guru"
     experiment_01:
+        num_sampled_skills: 50
+        popular_threshold: 0.2
+        rare_threshold: 0.2
+        dataset: "guru"
+    experiment_02:
         num_sampled_skills: 50
         popular_threshold: 0.2
         rare_threshold: 0.2

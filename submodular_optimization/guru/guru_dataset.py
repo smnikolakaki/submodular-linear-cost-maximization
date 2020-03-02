@@ -162,7 +162,7 @@ class GuruData(object):
 
         # Create final skills sample
         self.skills_covered = np.zeros(self.num_skills)
-
+        
         for skill_id in range(self.num_skills):
             if skill_id not in sampled_skills:
                 self.skills_covered[skill_id] = 1  # Mark unsampled skills as already covered

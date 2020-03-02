@@ -78,7 +78,7 @@ class UnconstrainedDistortedGreedy(object):
 
         for i in range(0, k):
             greedy_element = np.random.choice(list(self.E), size=1)[0]
-            if self.greedy_criterion(curr_sol, greedy_element, k, i) > 0:
+            if self.greedy_criterion(curr_sol.copy(), greedy_element, k, i) > 0:
                 curr_sol.add(greedy_element)
 
         curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)

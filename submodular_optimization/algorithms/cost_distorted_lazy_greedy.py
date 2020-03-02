@@ -145,7 +145,7 @@ class CostDistortedLazyGreedy(object):
             curr_val = 0
 
             for i in range(1, k+1):
-                lazy_greedy_element = self.find_lazy_greedy_eval_element(curr_sol, k, i)
+                lazy_greedy_element = self.find_lazy_greedy_eval_element(curr_sol.copy(), k, i)
                 if lazy_greedy_element and self.greedy_criterion(curr_sol.copy(), lazy_greedy_element, k, i) > 0:
                     curr_sol.add(lazy_greedy_element)
                     E.remove(lazy_greedy_element)
@@ -174,7 +174,7 @@ class CostDistortedLazyGreedy(object):
         self.initialize_max_heap()
 
         for i in range(0, k):
-            lazy_greedy_element = self.find_lazy_greedy_eval_element(curr_sol, k, i)
+            lazy_greedy_element = self.find_lazy_greedy_eval_element(curr_sol.copy(), k, i)
             if lazy_greedy_element and self.greedy_criterion(curr_sol.copy(), lazy_greedy_element, k, i) > 0:
                 curr_sol.add(lazy_greedy_element)
 
