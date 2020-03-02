@@ -62,6 +62,9 @@ class Experiment02(object):
         user_sample_ratios = [0.005,0.1,0.2,0.3,0.4,0.5]
         seeds = [i for i in range(6,11)]
         ks = [5,10,15,20,25,30,35,40,45,50]
+
+        sampling_epsilon_values = [0.01]
+
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
         popular_sample_fraction = 0.1
@@ -88,13 +91,24 @@ class Experiment02(object):
                          user_sample_ratio, seed, k)
                     results.append(result)
 
+                # Constrained Stochastic Distorted Greedy
+                config = self.config.copy()
+                for k in ks:
+                    for sample_epsilon in sampling_epsilon_values:
+                        config = self.config.copy()
+                        config['algorithms']['constrained_stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                        result = alg.run(config, data, "constrained_stochastic_distorted_greedy",
+                             sample_epsilon, None, scaling_factor, num_sampled_skills,
+                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                             user_sample_ratio, seed, k)
+                        results.append(result)
+
                 # Constrained Cost Scaled Greedy
                 config = self.config.copy()
                 result = alg.run(self.config, data, "cost_scaled_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                      user_sample_ratio, seed, None)
-                print('Solution is:',result['sol'])
                 # For cardinality constraints of size k we find the prefix of size k
                 # and compute the score, cost, submodular val  of that solution and update result 
                 for k in ks:
@@ -110,8 +124,36 @@ class Experiment02(object):
                         sol_k = result['sol']
                         val = result['val']
 
+                    result_k['k'] = k;
                     self.logger.info("Best solution constrained cost scaled: {}\nBest value: {}".format(sol_k, val))
                     results.append(result_k)
+
+                # Cost scaled lazy exact greedy
+                config = self.config.copy()
+                result = alg.run(self.config, data, "cost_scaled_lazy_exact_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                # For cardinality constraints of size k we find the prefix of size k
+                # and compute the score, cost, submodular val  of that solution and update result 
+                for k in ks:
+                    result_k = result.copy()
+                    if k < len(result['sol']):
+                        sol_k = set(list(result['sol'])[:k])
+                        submodular_val = data.submodular_func(sol_k)
+                        cost = data.cost_func(sol_k)
+                        val = submodular_val - cost
+                        result_k['sol'] = sol_k; result_k['val'] = val; result_k['submodular_val'] = submodular_val;
+                        result_k['cost'] = cost; result_k['k'] = k;
+                    else:
+                        sol_k = result['sol']
+                        val = result['val']
+
+                    result_k['k'] = k;
+                    self.logger.info("Best solution constrained cost lazy exact scaled: {}\nBest value: {}".format(sol_k, val))
+                    results.append(result_k)
+
+        
 
                 self.logger.info("\n")
 
@@ -119,5 +161,5 @@ class Experiment02(object):
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_02.csv")
+        # self.data_exporter.export_csv_file(df, "experiment_02.csv")
         self.logger.info("Exported experiment_02 results")

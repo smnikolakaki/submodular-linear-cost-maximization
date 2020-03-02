@@ -61,9 +61,6 @@ class Experiment00(object):
 
         user_sample_ratios = [0.005,0.1,0.2,0.3,0.4,0.5]
         seeds = [i for i in range(6,11)]
-
-        # seeds = [i for i in range(6,11)]
-        seeds = [0]
         # lazy_eval_epsilon_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 0.99]
         sampling_epsilon_values = [0.01]
 
@@ -142,7 +139,7 @@ class Experiment00(object):
                          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                          user_sample_ratio, seed, None)
                     results.append(result)
-
+                
                 self.logger.info("\n")
 
         self.logger.info("Finished experiment 00")

@@ -15,6 +15,8 @@ from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGree
 from algorithms.cost_distorted_lazy_greedy import CostDistortedLazyGreedy
 from algorithms.distorted_lazy_greedy import DistortedLazyGreedy
 from algorithms.constrained_distorted_greedy import ConstrainedDistortedGreedy
+from algorithms.constrained_stochastic_distorted_greedy import ConstrainedStochasticDistortedGreedy
+from algorithms.constrained_streaming_greedy import ConstrainedStreamingGreedy
 
 class AlgorithmDriver(object):
     """
@@ -88,6 +90,13 @@ class AlgorithmDriver(object):
 
         elif algorithm == "constrained_distorted_greedy":
             alg = ConstrainedDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
+
+        elif algorithm == "constrained_streaming_greedy":
+            alg = ConstrainedStreamingGreedy(config, data.submodular_func, data.cost_func, data.E, k)
+
+        elif algorithm == "constrained_stochastic_distorted_greedy":
+            config['algorithms']['constrained_stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+            alg = ConstrainedStochasticDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
 
         else:
             self.logger.info("Algorithm is not implemented")
