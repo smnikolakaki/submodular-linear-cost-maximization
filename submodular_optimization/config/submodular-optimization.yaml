@@ -19,6 +19,7 @@ experiments:
         # - "experiment_00"
         # - "experiment_01"
         - "experiment_02"
+        # - "experiment_test"
         # - "experiment_00_parallel"
         # - "experiment_01_parallel"
 
@@ -34,9 +35,10 @@ algorithms:
         epsilon: 0.1
     stochastic_distorted_greedy_config:
         epsilon: 0.01
-    constrained_stochastic_distorted_greedy_config:
+    scaled_single_threshold_greedy_config:
         epsilon: 0.01
-    constrained_streaming_greedy_config:
+    scaled_single_threshold_max_val_greedy_config:
+        epsilon: 0.01
     unconstrained_distorted_greedy_config:
 
 experiment_configs:

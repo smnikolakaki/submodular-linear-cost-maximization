@@ -9,13 +9,14 @@ class DistortedGreedy(object):
     """
     Distored Greedy algorithm implementation
     """
-    def __init__(self, config, submodular_func, cost_func, E):
+    def __init__(self, config, submodular_func, cost_func, E, k):
         """
         Constructor
         :param config:
         :param submodular_func:
         :param cost_func:
         :param E -- a python set:
+        :param k:
         :return:
         """
         self.config = config
@@ -23,6 +24,11 @@ class DistortedGreedy(object):
         self.submodular_func = submodular_func
         self.cost_func = cost_func
         self.E = E
+
+        if k == None:
+            self.k = len(self.E)
+        else:
+            self.k = k
 
     def calc_marginal_gain(self, sol, e):
         """
@@ -71,13 +77,11 @@ class DistortedGreedy(object):
         :param:
         :return best_sol:
         """
-        # We set k = n
-        k = len(self.E)
         curr_sol = set([])
 
-        for i in range(0, k):
-            greedy_element = self.find_greedy_element(self.E, curr_sol, k, i)
-            if self.greedy_criterion(curr_sol.copy(), greedy_element, k, i) > 0:
+        for i in range(0, self.k):
+            greedy_element = self.find_greedy_element(self.E, curr_sol, self.k, i)
+            if self.greedy_criterion(curr_sol.copy(), greedy_element, self.k, i) > 0:
                 curr_sol.add(greedy_element)
 
         curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)

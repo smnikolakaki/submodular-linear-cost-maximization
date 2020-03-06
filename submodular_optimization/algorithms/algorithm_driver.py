@@ -14,9 +14,8 @@ from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.cost_distorted_lazy_greedy import CostDistortedLazyGreedy
 from algorithms.distorted_lazy_greedy import DistortedLazyGreedy
-from algorithms.constrained_distorted_greedy import ConstrainedDistortedGreedy
-from algorithms.constrained_stochastic_distorted_greedy import ConstrainedStochasticDistortedGreedy
-from algorithms.constrained_streaming_greedy import ConstrainedStreamingGreedy
+from algorithms.scaled_single_threshold_greedy import ScaledSingleThresholdGreedy
+from algorithms.scaled_single_threshold_max_val_greedy import ScaledSingleThresholdMaxValGreedy
 
 class AlgorithmDriver(object):
     """
@@ -58,7 +57,7 @@ class AlgorithmDriver(object):
             alg = CostDistortedGreedy(config, data.submodular_func, data.cost_func, data.E)
 
         elif algorithm == "distorted_greedy":
-            alg = DistortedGreedy(config, data.submodular_func, data.cost_func, data.E)
+            alg = DistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
 
         elif algorithm == "cost_scaled_greedy":
             alg = CostScaledGreedy(config, data.submodular_func, data.cost_func, data.E)
@@ -75,7 +74,7 @@ class AlgorithmDriver(object):
 
         elif algorithm == "stochastic_distorted_greedy":
             config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-            alg = StochasticDistortedGreedy(config, data.submodular_func, data.cost_func, data.E)
+            alg = StochasticDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
 
         elif algorithm == "unconstrained_distorted_greedy":
             alg = UnconstrainedDistortedGreedy(config, data.submodular_func, data.cost_func, data.E)
@@ -88,16 +87,14 @@ class AlgorithmDriver(object):
             config['algorithms']['distorted_lazy_greedy_config']['epsilon'] = lazy_epsilon
             alg = DistortedLazyGreedy(config, data.submodular_func, data.cost_func, data.E)
 
-        elif algorithm == "constrained_distorted_greedy":
-            alg = ConstrainedDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
+        elif algorithm == "scaled_single_threshold_greedy":
+            config['algorithms']['scaled_single_threshold_greedy_config']['epsilon'] = sample_epsilon
+            alg = ScaledSingleThresholdGreedy(config, data.submodular_func, data.cost_func, data.E, k)
 
-        elif algorithm == "constrained_streaming_greedy":
-            alg = ConstrainedStreamingGreedy(config, data.submodular_func, data.cost_func, data.E, k)
-
-        elif algorithm == "constrained_stochastic_distorted_greedy":
-            config['algorithms']['constrained_stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-            alg = ConstrainedStochasticDistortedGreedy(config, data.submodular_func, data.cost_func, data.E, k)
-
+        elif algorithm == "scaled_single_threshold_max_val_greedy":
+            config['algorithms']['scaled_single_threshold_max_val_greedy_config']['epsilon'] = sample_epsilon
+            alg = ScaledSingleThresholdMaxValGreedy(config, data.submodular_func, data.cost_func, data.E, k)
+            
         else:
             self.logger.info("Algorithm is not implemented")
 
