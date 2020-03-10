@@ -41,7 +41,7 @@ class ScaledSingleThresholdGreedy(object):
         :return marginal_gain:
         """
         prev_val = self.submodular_func(sol)
-        sol.add(e)
+        sol.append(e)
         new_val = self.submodular_func(sol)
         marginal_gain = new_val - prev_val
         return marginal_gain
@@ -66,7 +66,7 @@ class ScaledSingleThresholdGreedy(object):
         :param m:
         :return O:
         """
-        O = set([])
+        O = []
         lb = m
         ub = 2 * self.k * m
 
@@ -83,7 +83,7 @@ class ScaledSingleThresholdGreedy(object):
         for i in range(li,ui):
             v = np.power((1+self.epsilon), i)
             if lb <= v and v <= ub:
-                O.add(v)
+                O.append(v)
             if v > ub:
                 break
         return O
@@ -98,17 +98,18 @@ class ScaledSingleThresholdGreedy(object):
         # Create empty Sv for v in Oi that are new
         for v in O:
             if v not in S:
-                S[v] = set()
+                S[v] = list()
 
         # Delete sets Sv for v that do not exist in Oi
         S_vs = set(S.keys())
-        remove_vs = S_vs - O
+        O_set = set(O)
+        remove_vs = S_vs - O_set
         for v in remove_vs:
             del S[v]
 
         return S
 
-    def greedy_criterion(self, sol, e):
+    def scaled_greedy_criterion(self, sol, e):
         """
         Calculates the contribution of element e to greedy solution
         :param sol:
@@ -118,7 +119,7 @@ class ScaledSingleThresholdGreedy(object):
         # Weight scaling is constant c
         c = (1/2)*(3 + np.sqrt(5))
         marginal_gain = self.calc_marginal_gain(sol, e)
-        weighted_cost = c * self.cost_func(set({e}))
+        weighted_cost = c * self.cost_func([e])
         greedy_contrib = marginal_gain - weighted_cost
         return greedy_contrib
 
@@ -135,7 +136,9 @@ class ScaledSingleThresholdGreedy(object):
         if denominator == 0:
             return S
 
-        marg_gain = self.greedy_criterion(Sv.copy(), e)
+        # Marginal gain wrt scaled objective
+        marg_gain = self.scaled_greedy_criterion(Sv.copy(), e)
+        # Threshold tau wrt the value of the scaled objective
         nominator = (v/2) - self.calc_scaled_objective(Sv)
 
         tau = nominator / denominator
@@ -143,7 +146,7 @@ class ScaledSingleThresholdGreedy(object):
         if tau < 0 :
             tau = 0
         if marg_gain >= tau and len(Sv) < self.k:
-            S[v].add(e)
+            S[v].append(e)
         return S
 
     def get_arguments(self, S, e_i):
@@ -164,66 +167,10 @@ class ScaledSingleThresholdGreedy(object):
         :param result:
         :return S:
         """
-        S = collections.defaultdict(set)
+        S = collections.defaultdict(list)
         for v,sol in result:
            S[v] = sol 
         return S
-
-    @staticmethod
-    def run_algorithm(arg):
-        v = arg[0]; e_i = arg[1]; Sv = arg[2]; submodular_func = arg[3]; cost_func = arg[4]; k = arg[5]
-
-        def calc_marginal_gain(sol):
-            """
-            Calculates the marginal gain for adding element e to the current solution sol
-            :param sol:
-            :param e:
-            :return marginal_gain:
-            """
-            prev_val = submodular_func(sol)
-            sol.add(e_i)
-            new_val = submodular_func(sol)
-            marginal_gain = new_val - prev_val
-            return marginal_gain
-
-        def calc_scaled_objective(sol):
-            """
-            Calculates the scaled objective
-            :param sol:
-            :return obj_val:
-            """
-            # Weight scaling is constant c
-            c = (1/2)*(3 + np.sqrt(5))
-
-            val = submodular_func(sol)
-            weighted_cost = c * cost_func(sol)
-            obj_val = val - weighted_cost
-            return obj_val
-
-        def greedy_criterion(sol):
-            """
-            Calculates the contribution of element e to greedy solution
-            :param sol:
-            :param e:
-            :return greedy_contrib:
-            """
-            # Weight scaling is constant c
-            c = (1/2)*(3 + np.sqrt(5))
-            marginal_gain = calc_marginal_gain(sol)
-            weighted_cost = c * cost_func(set({e_i}))
-            greedy_contrib = marginal_gain - weighted_cost
-            return greedy_contrib
-
-        marg_gain = greedy_criterion(Sv.copy())
-        nominator = (v/2) - calc_scaled_objective(Sv)
-        denominator = k - len(Sv)
-        # print("Marg gain:",marg_gain,"Nominator",nominator,"Denominator:",denominator)
-        tau = nominator / denominator
-        if tau < 0 :
-            tau = 0
-        if marg_gain >= tau and len(Sv) < k:
-            Sv.add(e_i)
-        return (v,Sv)
 
     def run(self):
         """
@@ -233,13 +180,13 @@ class ScaledSingleThresholdGreedy(object):
         """
 
         # Non-parallel version
-        curr_sol = set([])
-        S = collections.defaultdict(set)
+        curr_sol = []
+        S = collections.defaultdict(list)
         m = 0
 
         for i in range(0, len(self.E)):
             e_i = i
-            # self.logger.info("Outer ei: {}".format(e_i))
+            # Thresholds defined over the scaled objective value
             m = max(m, self.calc_scaled_objective(set({e_i})))       
             # Creating set of thresholds
             Oi = self.get_set_of_thresholds(m)
@@ -250,43 +197,9 @@ class ScaledSingleThresholdGreedy(object):
                 self.update_sets_new_element(v, e_i, S)
         
         if S:
+            # Return the solution that maximizes original objective value
             curr_sol = max(S.items(), key=lambda sol: self.submodular_func(sol[1]) - self.cost_func(sol[1]))[1]
         curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)
         self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
-
-        # # Parallel version
-        # curr_sol = set([])
-        # S = collections.defaultdict(set)
-        # m = 0
-
-        # num_processes = mp.cpu_count()
-        # self.logger.info("Processes: {}".format(num_processes))
-        # # self.logger.info("Args: {}\n".format(args))
-        # pool = ProcessPool(nodes=1)
-        # print('Num elements:',len(self.E))
-        # for i in range(0, len(self.E)):
-        #     e_i = i
-
-        #     self.logger.info("Outer ei: {}".format(e_i))
-        #     m = max(m, self.calc_scaled_objective(set({e_i})))       
-        #     # Creating set of thresholds
-        #     Oi = self.get_set_of_thresholds(m)
-        #     # Update the set Sv keys
-        #     S = self.update_set_keys(S,Oi)
-        #     args = self.get_arguments(S,e_i)
-        #     # print('m:',m,'Oi:',Oi,'S:',S,'e_i:',e_i)
-        #     # Update the sets Sv with new element in parallel
-        #     # Create a pool of processes
-        #     results = pool.amap(self.run_algorithm, args).get()
-        #     # print('results:',results)
-        #     S = self.combine_result(results)
-        #     # print('Here S:',S)
-
-        # pool.terminate()
-        # pool.join()
-        # pool.clear()
-        # curr_sol = max(S.items(), key=lambda sol: self.submodular_func(sol[1]) - self.cost_func(sol[1]))[1]
-        # curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)
-        # self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
 
         return curr_sol 

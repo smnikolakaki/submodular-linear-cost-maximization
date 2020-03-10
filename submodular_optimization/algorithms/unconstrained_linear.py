@@ -32,12 +32,12 @@ class UnconstrainedLinear(object):
         :return marginal_gain:
         """
         prev_val = self.submodular_func(sol)
-        sol.add(e)
+        sol.append(e)
         new_val = self.submodular_func(sol)
         marginal_gain = new_val - prev_val
         return marginal_gain
 
-    def greedy_criterion(self, sol, e):
+    def scaled_greedy_criterion(self, sol, e):
         """
         Calculates the contribution of element e to greedy solution
         :param sol:
@@ -47,7 +47,7 @@ class UnconstrainedLinear(object):
         # Weight scaling is constant
         rho = 2
         marginal_gain = self.calc_marginal_gain(sol, e)
-        weighted_cost = rho * self.cost_func(set({e}))
+        weighted_cost = rho * self.cost_func([e])
         greedy_contrib = marginal_gain - weighted_cost
         return greedy_contrib
 
@@ -59,13 +59,15 @@ class UnconstrainedLinear(object):
         """
         # We set k = n
         k = len(self.E)
-        curr_sol = set([])
+        curr_sol = []
         
         for i in range(0, k):
             greedy_element = i
-            if self.greedy_criterion(curr_sol.copy(), greedy_element) > 0:
-                curr_sol.add(greedy_element)
+            # Element is added to the solution wrt the scaled objective
+            if self.scaled_greedy_criterion(curr_sol.copy(), greedy_element) > 0:
+                curr_sol.append(greedy_element)
 
+        # Computing the original objective value for current solution
         curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)
         self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
 

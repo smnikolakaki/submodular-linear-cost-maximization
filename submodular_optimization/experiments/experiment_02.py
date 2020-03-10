@@ -10,6 +10,7 @@ from data.data_provider import DataProvider
 from data.data_exporter import DataExporter
 from algorithms.algorithm_driver import AlgorithmDriver
 from algorithms.set_cover_greedy import SetCoverGreedy
+from timeit import default_timer as timer
 
 class Experiment02(object):
     """
@@ -59,12 +60,12 @@ class Experiment02(object):
         popular_threshold = self.expt_config['popular_threshold']
         rare_threshold = self.expt_config['rare_threshold']
 
-        user_sample_ratios = [0.005,0.1,0.2,0.3,0.4,0.5]
+        user_sample_ratios = [0.4]
         seeds = [i for i in range(6,11)]
         ks = [1,5,10,15,20,25,30,35,40,45,50]
-
+   
         sampling_epsilon_values_stochastic = [0.01]
-        sampling_epsilon_values_scaled_threshold = [0.01,0.05,0.1,0.15,0.2,0.25,0.3]
+        error_epsilon_values_scaled_threshold = [0.1]
 
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
@@ -79,101 +80,87 @@ class Experiment02(object):
 
                 # Load dataset
                 data = self.data_provider.read_guru_data_obj()
+                config = self.config.copy()
+                alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
+                                    rare_threshold,popular_threshold, user_sample_ratio, seed)
 
 
                 self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
 
                 # Distorted Greedy
-                config = self.config.copy()
                 for k in ks:
+                    # Run algorithm
+                    start = timer()
                     result = alg.run(self.config, data, "distorted_greedy",
                          None, None, scaling_factor, num_sampled_skills,
                          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                          user_sample_ratio, seed, k)
+                    end = timer()
+                    result['runtime'] = end - start
                     results.append(result)
+                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",k,end - start))
+
+                self.logger.info("\n")
 
                 # Stochastic Distorted Greedy
-                config = self.config.copy()
                 for k in ks:
                     for sample_epsilon in sampling_epsilon_values_stochastic:
-                        config = self.config.copy()
-                        config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                        # Run algorithm
+                        start = timer()
                         result = alg.run(config, data, "stochastic_distorted_greedy",
                              sample_epsilon, None, scaling_factor, num_sampled_skills,
                              rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio, seed, k)
+                             user_sample_ratio, seed, k) 
+                        end = timer()
+                        result['runtime'] = end - start
                         results.append(result)
+                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",k,end - start))
 
-                # Cost Scaled Greedy
-                config = self.config.copy()
-                result = alg.run(self.config, data, "cost_scaled_greedy",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio, seed, None)
-                # For cardinality constraints of size k we find the prefix of size k
-                # and compute the score, cost, submodular val  of that solution and update result 
+                self.logger.info("\n")
+
+                # Cost Scaled Greedy              
                 for k in ks:
-                    result_k = result.copy()
-                    if k < len(result['sol']):
-                        sol_k = set(list(result['sol'])[:k])
-                        submodular_val = data.submodular_func(sol_k)
-                        cost = data.cost_func(sol_k)
-                        val = submodular_val - cost
-                        result_k['sol'] = sol_k; result_k['val'] = val; result_k['submodular_val'] = submodular_val;
-                        result_k['cost'] = cost; result_k['k'] = k;
-                    else:
-                        sol_k = result['sol']
-                        val = result['val']
+                    # Run algorithm
+                    start = timer()
+                    result = alg.run(self.config, data, "cost_scaled_greedy",
+                         None, None, scaling_factor, num_sampled_skills,
+                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                         user_sample_ratio, seed, k)
+                    end = timer()
+                    result['runtime'] = end - start
+                    results.append(result)
+                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",k,end - start))
 
-                    result_k['k'] = k;
-                    self.logger.info("Best solution constrained cost scaled: {}\nBest value: {}".format(sol_k, val))
-                    results.append(result_k)
+                self.logger.info("\n")
 
                 # Cost scaled lazy exact greedy
-                config = self.config.copy()
-                result = alg.run(self.config, data, "cost_scaled_lazy_exact_greedy",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio, seed, None)
-                # For cardinality constraints of size k we find the prefix of size k
-                # and compute the score, cost, submodular val  of that solution and update result 
                 for k in ks:
-                    result_k = result.copy()
-                    if k < len(result['sol']):
-                        sol_k = set(list(result['sol'])[:k])
-                        submodular_val = data.submodular_func(sol_k)
-                        cost = data.cost_func(sol_k)
-                        val = submodular_val - cost
-                        result_k['sol'] = sol_k; result_k['val'] = val; result_k['submodular_val'] = submodular_val;
-                        result_k['cost'] = cost; result_k['k'] = k;
-                    else:
-                        sol_k = result['sol']
-                        val = result['val']
+                    # Run algorithm
+                    start = timer()
+                    result = alg.run(self.config, data, "cost_scaled_lazy_exact_greedy",
+                         None, None, scaling_factor, num_sampled_skills,
+                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                         user_sample_ratio, seed, k)
+                    end = timer()
+                    result['runtime'] = end - start
+                    results.append(result)
+                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_exact_greedy",k,end - start))
 
-                    result_k['k'] = k;
-                    self.logger.info("Best solution constrained cost lazy exact scaled: {}\nBest value: {}".format(sol_k, val))
-                    results.append(result_k)
+                self.logger.info("\n")
 
-            
                 # Scaled Single Threshold Greedy
-                config = self.config.copy()
                 for k in ks:
-                    for sample_epsilon in sampling_epsilon_values_scaled_threshold:
+                    for error_epsilon in error_epsilon_values_scaled_threshold:
+                        # Run algorithm
+                        start = timer()
                         result = alg.run(self.config, data, "scaled_single_threshold_greedy",
-                             sample_epsilon, None, scaling_factor, num_sampled_skills,
+                             None, error_epsilon, scaling_factor, num_sampled_skills,
                              rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                              user_sample_ratio, seed, k)
+                        end = timer()
+                        result['runtime'] = end - start
                         results.append(result)
-
-                # Scaled Single Threshold Greedy - Know max val
-                config = self.config.copy()
-                for k in ks:
-                    for sample_epsilon in sampling_epsilon_values_scaled_threshold:
-                        result = alg.run(self.config, data, "scaled_single_threshold_max_val_greedy",
-                             sample_epsilon, None, scaling_factor, num_sampled_skills,
-                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio, seed, k)
-                        results.append(result)
+                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("scaled_single_threshold_greedy",k,end - start))
 
                 self.logger.info("\n")
 
