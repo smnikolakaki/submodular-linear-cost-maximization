@@ -5,13 +5,14 @@ This class contains methods related to the guru dataset
 import logging
 import numpy as np
 import pandas as pd
-from numba import jit
-from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
+import sys
+# from numba import jit
+# from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 import warnings
 
 # Suppress Numba deprecation warnings
-warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
+# warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
+# warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
 
 
 class GuruData(object):
@@ -173,7 +174,7 @@ class GuruData(object):
         self.num_popular_skills = num_popular_skills
 
     @staticmethod
-    @jit(nopython=True)
+    # @jit(nopython=True)
     def submodular_func_jit(sol, skills_covered, skills_matrix):
         """
         Submodular function
@@ -204,23 +205,41 @@ class GuruData(object):
         val = self.submodular_func_jit(sol, skills_covered, self.skills_matrix)
         return val * self.scaling_factor
 
-    def submodular_func_old(self, sol):
+    def init_submodular_func_coverage_caching(self):
+        skills_covered = self.skills_covered
+        return skills_covered
+
+    def submodular_func_caching_jit(self, skills_covered, user_id, skills_matrix):
+        """
+        Submodular function
+        :param sol -- a pythons set of user_ids:
+        :param skills_covered:
+        :param skills_matrix:
+        :return val -- number of covered skills:
+        """
+        skills_covered_during_sampling = len(np.nonzero(skills_covered)[0])
+        if user_id:
+            # print('Skills covered before:',skills_covered)
+            skills_covered = np.logical_or(skills_covered, skills_matrix[user_id])
+            # print('Skills covered are after:',skills_covered)
+        val = len(np.nonzero(skills_covered)[0])
+        # print('Skills coverd during sampling:',skills_covered_during_sampling,'val:',val,'skills covered:',skills_covered,'user id',user_id)
+        if skills_covered_during_sampling > 0:
+            val -= skills_covered_during_sampling
+
+        return val, skills_covered
+
+    def submodular_func_caching(self, skills_covered, user_id):
         """
         Submodular function
         :param sol -- a python set of user_ids:
+        :param cache_val:
+        :param use_cached_val:
         :return val -- number of covered skills:
         """
-        skills_covered = self.skills_covered
-        for user_id in sol:
-            skills_covered = np.logical_or(skills_covered, self.users[user_id]['skills_array'])
-        val = len(np.nonzero(skills_covered)[0])
-
-        # If we sampled skills to be covered, then subtract the skills that
-        # we already marked covered during sampling
-        skills_covered_during_sampling = len(np.nonzero(self.skills_covered)[0])
-        if skills_covered_during_sampling > 0:
-            val -= skills_covered_during_sampling
-        return val
+        val, skills_covered = self.submodular_func_caching_jit(skills_covered, user_id, self.skills_matrix)
+        # print('Main Indices with elements equal to zero:',np.where(skills_covered == 0)[0],'Number of indices:',len(np.where(skills_covered == 0)[0]))
+        return val * self.scaling_factor, skills_covered
 
     def cost_func(self, sol):
         """

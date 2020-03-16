@@ -15,7 +15,7 @@ class ScaledSingleThresholdGreedy(object):
     """
     Scaled single-threshold Greedy algorithm implementation
     """
-    def __init__(self, config, submodular_func, cost_func, E, k):
+    def __init__(self, config, init_submodular_func_coverage, submodular_func, cost_func, E, k):
         """
         Constructor
         :param config:
@@ -29,24 +29,27 @@ class ScaledSingleThresholdGreedy(object):
         self.logger = logging.getLogger("so_logger")
         self.submodular_func = submodular_func
         self.cost_func = cost_func
+        self.init_submodular_func_coverage = init_submodular_func_coverage
         self.E = E
         self.k = k
         self.epsilon = self.config['algorithms']['scaled_single_threshold_greedy_config']['epsilon']
 
-    def calc_marginal_gain(self, sol, e):
+    def calc_marginal_gain(self, skills_covered, e):
         """
         Calculates the marginal gain for adding element e to the current solution sol
         :param sol:
         :param e:
         :return marginal_gain:
         """
-        prev_val = self.submodular_func(sol)
-        sol.append(e)
-        new_val = self.submodular_func(sol)
+        prev_val, skills_covered = self.submodular_func(skills_covered, [])
+        # print('Previous value:',prev_val)
+        new_val, skills_covered = self.submodular_func(skills_covered, [e])
+        # print('New value:',new_val)
         marginal_gain = new_val - prev_val
+        # print('Marginal gain:',marginal_gain)
         return marginal_gain
 
-    def calc_scaled_objective(self, sol):
+    def calc_scaled_objective(self, skills_covered, user_id, sol, val):
         """
         Calculates the scaled objective
         :param sol:
@@ -54,8 +57,8 @@ class ScaledSingleThresholdGreedy(object):
         """
         # Weight scaling is constant c
         c = (1/2)*(3 + np.sqrt(5))
-
-        val = self.submodular_func(sol)
+        submodular_gain, skills_covered = self.submodular_func(skills_covered, user_id)
+        val = val + submodular_gain
         weighted_cost = c * self.cost_func(sol)
         obj_val = val - weighted_cost
         return obj_val
@@ -98,7 +101,10 @@ class ScaledSingleThresholdGreedy(object):
         # Create empty Sv for v in Oi that are new
         for v in O:
             if v not in S:
-                S[v] = list()
+                S[v] = {}
+                S[v]['solution'] = list()
+                S[v]['skills_covered'] = self.init_submodular_func_coverage()
+                S[v]['value'] = 0
 
         # Delete sets Sv for v that do not exist in Oi
         S_vs = set(S.keys())
@@ -109,7 +115,7 @@ class ScaledSingleThresholdGreedy(object):
 
         return S
 
-    def scaled_greedy_criterion(self, sol, e):
+    def scaled_greedy_criterion(self, skills_covered, e):
         """
         Calculates the contribution of element e to greedy solution
         :param sol:
@@ -118,7 +124,7 @@ class ScaledSingleThresholdGreedy(object):
         """
         # Weight scaling is constant c
         c = (1/2)*(3 + np.sqrt(5))
-        marginal_gain = self.calc_marginal_gain(sol, e)
+        marginal_gain = self.calc_marginal_gain(skills_covered, e)
         weighted_cost = c * self.cost_func([e])
         greedy_contrib = marginal_gain - weighted_cost
         return greedy_contrib
@@ -131,46 +137,42 @@ class ScaledSingleThresholdGreedy(object):
         :param S:
         :return :
         """
-        Sv = S[v].copy()
-        denominator = self.k - len(Sv)
+        Sv_solution = S[v]['solution']
+        Sv_skills_covered = S[v]['skills_covered']
+        Sv_value = S[v]['value']
+
+        denominator = self.k - len(Sv_solution)
         if denominator == 0:
             return S
 
         # Marginal gain wrt scaled objective
-        marg_gain = self.scaled_greedy_criterion(Sv.copy(), e)
+        marg_gain = self.scaled_greedy_criterion(Sv_skills_covered, e)
         # Threshold tau wrt the value of the scaled objective
-        nominator = (v/2) - self.calc_scaled_objective(Sv)
-
+        nominator = (v/2) - self.calc_scaled_objective(Sv_skills_covered, [], Sv_solution, Sv_value)
         tau = nominator / denominator
-
         if tau < 0 :
             tau = 0
-        if marg_gain >= tau and len(Sv) < self.k:
-            S[v].append(e)
+        if marg_gain >= tau and len(Sv_solution) < self.k:
+            S[v]['solution'].append(e)
+            submodular_gain, skills_covered = self.submodular_func(Sv_skills_covered, [e])
+            S[v]['skills_covered'] = skills_covered
+            S[v]['value'] = Sv_value + submodular_gain
+
         return S
 
-    def get_arguments(self, S, e_i):
-        """
-        Creates the arguments for parallel code
-        :param S:
-        :param e_i:
-        :return args:
-        """
-        args = []
-        for v, sol in S.items():
-            args.append((v, e_i, S[v].copy(), self.submodular_func, self.cost_func, self.k))
-        return args 
+    def find_max(self, S):
+        max_solution = []
+        max_value = -float("inf")
 
-    def combine_result(self, result):
-        """
-        Combining results from parallelization
-        :param result:
-        :return S:
-        """
-        S = collections.defaultdict(list)
-        for v,sol in result:
-           S[v] = sol 
-        return S
+        for v, nested_dict in S.items():
+            # print('Nested dictionary:',nested_dict['solution'])
+            submodular_value = nested_dict['value']; solution = nested_dict['solution']
+            value = submodular_value - self.cost_func(solution)
+            if max_value < value:
+                max_value = value
+                max_solution = solution
+
+        return max_solution, max_value
 
     def run(self):
         """
@@ -179,27 +181,29 @@ class ScaledSingleThresholdGreedy(object):
         :return:
         """
 
-        # Non-parallel version
         curr_sol = []
+        curr_val = 0
         S = collections.defaultdict(list)
         m = 0
 
-        for i in range(0, len(self.E)):
-            e_i = i
+        # Initialize the submodular function coverage skills
+        self.skills_covered = self.init_submodular_func_coverage()
+
+        for e_i in self.E:
             # Thresholds defined over the scaled objective value
-            m = max(m, self.calc_scaled_objective(set({e_i})))       
+            m = max(m, self.calc_scaled_objective(self.skills_covered,[e_i],[],0))   
             # Creating set of thresholds
             Oi = self.get_set_of_thresholds(m)
             # Update the set Sv keys
             S = self.update_set_keys(S,Oi)
             # Update the sets Sv with new element in parallel
             for v in Oi:
-                self.update_sets_new_element(v, e_i, S)
-        
+                S = self.update_sets_new_element(v, e_i, S)
         if S:
             # Return the solution that maximizes original objective value
-            curr_sol = max(S.items(), key=lambda sol: self.submodular_func(sol[1]) - self.cost_func(sol[1]))[1]
-        curr_val = self.submodular_func(curr_sol) - self.cost_func(curr_sol)
+            curr_sol, curr_val = self.find_max(S)
+            # print(max(S, key=lambda sol: S[sol]['value'] - self.cost_func(S[sol]['solution'])))
+
         self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
 
         return curr_sol 

@@ -19,7 +19,7 @@ experiments:
         # - "experiment_00"
         # - "experiment_01"
         # - "experiment_02"
-        # - "experiment_03"
+        - "experiment_03"
         # - "experiment_test"
         # - "experiment_00_parallel"
         # - "experiment_01_parallel"

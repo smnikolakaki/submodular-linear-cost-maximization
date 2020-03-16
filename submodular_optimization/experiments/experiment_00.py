@@ -60,7 +60,7 @@ class Experiment00(object):
         popular_threshold = self.expt_config['popular_threshold']
         rare_threshold = self.expt_config['rare_threshold']
 
-        user_sample_ratios = [0.001,0.1,0.2,0.3,0.4,0.5]
+        user_sample_ratios = [0.001,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
         seeds = [i for i in range(6,11)]
 
         sampling_epsilon_values = [0.01]
