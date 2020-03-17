@@ -6,14 +6,7 @@ import logging
 import numpy as np
 import pandas as pd
 import sys
-# from numba import jit
-# from numba.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
 import warnings
-
-# Suppress Numba deprecation warnings
-# warnings.simplefilter('ignore', category=NumbaDeprecationWarning)
-# warnings.simplefilter('ignore', category=NumbaPendingDeprecationWarning)
-
 
 class GuruData(object):
     """
@@ -28,6 +21,7 @@ class GuruData(object):
         :param users:
         :return:
         """
+        print('In initialization of guru.')
         self.config = config
         self.logger = logging.getLogger("so_logger")
         self.num_skills = len(skill_df)
@@ -40,7 +34,7 @@ class GuruData(object):
         # Create numba - useable data
         self.skills_matrix = np.array([x['skills_array'] for x in self.users])
         self.cost_vector = np.array([x['cost'] for x in self.users])
-
+        sys.exit()
     def create_samples(self, skills_sample_fraction=1.0, users_sample_fraction=1.0):
         """
         Samples skills and users
@@ -130,7 +124,6 @@ class GuruData(object):
         :param popular_threshold:
         :param user_sample_fraction:
         """
-
         self.sample_users(user_sample_fraction)
 
         df_users = pd.DataFrame(self.users)

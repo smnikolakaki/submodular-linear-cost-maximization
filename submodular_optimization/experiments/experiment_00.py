@@ -77,7 +77,7 @@ class Experiment00(object):
                 self.logger.info("Experiment for user sample ratio: {} and scaling factor: {} and seed: {}".format(user_sample_ratio,scaling_factor,seed))
 
                 # Load dataset
-                data = self.data_provider.read_guru_data_obj()
+                data = self.data_provider.read_freelancer_data_obj()
                 config = self.config.copy()
                 alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
                                     rare_threshold,popular_threshold, user_sample_ratio, seed)
@@ -176,5 +176,5 @@ class Experiment00(object):
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_00.csv")
+        self.data_exporter.export_csv_file(df, "experiment_00_freelancer.csv")
         self.logger.info("Exported experiment_00 results")

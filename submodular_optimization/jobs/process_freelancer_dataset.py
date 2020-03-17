@@ -79,9 +79,12 @@ class FreelancerDataProcessor(object):
         data_exporter.export_csv_file(user_df, "freelancer/freelancer_user_df.csv")
         data_exporter.export_csv_file(skill_df, "freelancer/freelancer_skill_df.csv")
 
+        # Scaling factor for submodular function
+        scaling_factor = 1
+
         # Create and export data object to be used in experiments
         # containing all methods related to freelancer data
-        freelancer = FreelancerData(self.config, user_df, skill_df, users)
+        freelancer = FreelancerData(self.config, user_df, skill_df, users, scaling_factor)
         data_exporter.export_dill_file(freelancer, "freelancer/freelancer_data.dill")
 
         self.logger.info("Finished job: FreelancerDataProcessor")

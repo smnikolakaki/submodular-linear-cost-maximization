@@ -45,24 +45,24 @@ algorithms:
 experiment_configs:
     experiment_00:
         num_sampled_skills: 50
-        popular_threshold: 0.02
-        rare_threshold: 0.6
-        dataset: "guru"
+        popular_threshold: 0.2
+        rare_threshold: 0.2
+        dataset: "freelancer"
     experiment_01:
         num_sampled_skills: 50
         popular_threshold: 0.2
         rare_threshold: 0.2
-        dataset: "guru"
+        dataset: "freelancer"
     experiment_02:
         num_sampled_skills: 50
         popular_threshold: 0.2
         rare_threshold: 0.2
-        dataset: "guru"
+        dataset: "freelancer"
     experiment_03:
         num_sampled_skills: 50
         popular_threshold: 0.2
         rare_threshold: 0.2
-        dataset: "guru"
+        dataset: "freelancer"
     experiment_00_parallel:
       num_sampled_skills: 50
       popular_threshold: 0.2
