@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import sys
 import warnings
+from collections import defaultdict
 
 class FreelancerData(object):
     """
@@ -165,6 +166,29 @@ class FreelancerData(object):
         self.num_common_skills = num_common_skills
         self.num_popular_skills = num_popular_skills
 
+    def assign_ground_set_to_random_partitions(self, num_of_partitions):
+        """
+        Assigns the ground set elements to partitions uniformly at random
+
+        :param num_of_partitions:
+        """
+        self.partitions = defaultdict(list,{k:[] for k in range(0,num_of_partitions)})
+        partition_ids = np.arange(start=0, stop=num_of_partitions, step=1)
+
+        for user_id in self.E:
+            p_id = np.random.choice(a = partition_ids)
+            self.partitions[p_id].append(user_id)
+
+    def assign_ground_set_to_salary_partitions(self, num_of_partitions):
+        """
+        Assigns the ground set elements to partitions based on their salary
+
+        :param num_of_partitions:
+        """
+        costs = []
+        for user_id in self.E:
+            costs.append(self.cost_vector[user_id])
+        print('Costs:',sorted(costs))
     @staticmethod
     # @jit(nopython=True)
     def submodular_func_jit(sol, skills_covered, skills_matrix):
@@ -211,11 +235,8 @@ class FreelancerData(object):
         """
         skills_covered_during_sampling = len(np.nonzero(skills_covered)[0])
         if user_id:
-            # print('Skills covered before:',skills_covered)
             skills_covered = np.logical_or(skills_covered, skills_matrix[user_id])
-            # print('Skills covered are after:',skills_covered)
         val = len(np.nonzero(skills_covered)[0])
-        # print('Skills coverd during sampling:',skills_covered_during_sampling,'val:',val,'skills covered:',skills_covered,'user id',user_id)
         if skills_covered_during_sampling > 0:
             val -= skills_covered_during_sampling
 
@@ -230,7 +251,6 @@ class FreelancerData(object):
         :return val -- number of covered skills:
         """
         val, skills_covered = self.submodular_func_caching_jit(skills_covered, user_id, self.skills_matrix)
-        # print('Main Indices with elements equal to zero:',np.where(skills_covered == 0)[0],'Number of indices:',len(np.where(skills_covered == 0)[0]))
         return val * self.scaling_factor, skills_covered
 
     def cost_func(self, sol):

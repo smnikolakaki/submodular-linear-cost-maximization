@@ -7,9 +7,6 @@ import numpy as np
 import collections
 import operator
 import sys
-# import multiprocessing as mp
-
-# from pathos.pools import ProcessPool
 
 class ScaledSingleThresholdGreedy(object):
     """

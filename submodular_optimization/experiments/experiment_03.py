@@ -156,7 +156,7 @@ class Experiment03(object):
                 # Cost scaled lazy exact greedy
                 # Run algorithm that creates greedy ordering
                 start = timer()
-                result = alg.run(self.config, data, "cost_scaled_lazy_exact_greedy",
+                result = alg.run(self.config, data, "cost_scaled_lazy_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                      user_sample_ratio, seed, n)
@@ -178,7 +178,7 @@ class Experiment03(object):
                     result_k['k'] = k;
                     results.append(result_k)
                     self.logger.info("Best solution: {}\nBest value: {}".format(sol_k, val_k))
-                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_exact_greedy",k,end - start))
+                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",k,end - start))
 
                 self.logger.info("\n")
 

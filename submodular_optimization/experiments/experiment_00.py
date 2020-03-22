@@ -121,13 +121,13 @@ class Experiment00(object):
 
                 # Cost scaled lazy exact greedy
                 start = timer()
-                result = alg.run(config, data, "cost_scaled_lazy_exact_greedy",
+                result = alg.run(config, data, "cost_scaled_lazy_greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                      user_sample_ratio, seed, None)
                 end = timer()
                 result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_exact_greedy",None,end - start))
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",None,end - start))
                 results.append(result)
 
                 self.logger.info("\n")

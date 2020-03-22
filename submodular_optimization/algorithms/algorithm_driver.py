@@ -3,14 +3,20 @@ This class runs an algorithm with given config
 """
 import logging
 import numpy as np
+from copy import deepcopy
 from timeit import default_timer as timer
 from algorithms.distorted_greedy import DistortedGreedy
 from algorithms.cost_scaled_greedy import CostScaledGreedy
 from algorithms.unconstrained_linear import UnconstrainedLinear
-from algorithms.cost_scaled_lazy_exact_greedy import CostScaledLazyExactGreedy
+from algorithms.cost_scaled_lazy_greedy import CostScaledLazyGreedy
+from algorithms.cost_scaled_partition_matroid_greedy import CostScaledPartitionMatroidGreedy
+from algorithms.partition_matroid_greedy import PartitionMatroidGreedy
+from algorithms.cost_scaled_partition_matroid_lazy_greedy import CostScaledPartitionMatroidLazyGreedy
+from algorithms.cost_scaled_partition_matroid_scaled_lazy_greedy import CostScaledPartitionMatroidScaledLazyGreedy
 from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.scaled_single_threshold_greedy import ScaledSingleThresholdGreedy
+from ordered_set import OrderedSet
 
 class AlgorithmDriver(object):
     """
@@ -35,6 +41,15 @@ class AlgorithmDriver(object):
                                                     popular_sample_fraction, rare_threshold,
                                                     popular_threshold, user_sample_ratio)
 
+    def create_partitions(self, data, num_of_partitions, partition_type):
+        """
+        create the partition matroids
+        """
+        if partition_type == "random":
+            data.assign_ground_set_to_random_partitions(num_of_partitions)
+        else:
+            data.assign_ground_set_to_equi_salary_partitions(num_of_partitions)
+
     def run(self, config, data, algorithm, sample_epsilon, error_epsilon, scaling_factor, num_sampled_skills,
             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio, seed, k):
         """run
@@ -56,6 +71,9 @@ class AlgorithmDriver(object):
         """
         data.scaling_factor = scaling_factor
 
+        data.E = sorted(list(data.E))
+        data.E = OrderedSet(data.E)
+
         if algorithm == "distorted_greedy":
             alg = DistortedGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
 
@@ -65,8 +83,8 @@ class AlgorithmDriver(object):
         elif algorithm == "unconstrained_linear":
             alg = UnconstrainedLinear(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E)
 
-        elif algorithm == "cost_scaled_lazy_exact_greedy":
-            alg = CostScaledLazyExactGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
+        elif algorithm == "cost_scaled_lazy_greedy":
+            alg = CostScaledLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
 
         elif algorithm == "unconstrained_distorted_greedy":
             alg = UnconstrainedDistortedGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E)
@@ -78,7 +96,19 @@ class AlgorithmDriver(object):
         elif algorithm == "scaled_single_threshold_greedy":
             config['algorithms']['scaled_single_threshold_greedy_config']['epsilon'] = error_epsilon
             alg = ScaledSingleThresholdGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
-            
+        
+        elif algorithm == "cost_scaled_partition_matroid_greedy":
+            alg = CostScaledPartitionMatroidGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
+
+        elif algorithm == "partition_matroid_greedy":
+            alg = PartitionMatroidGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
+
+        elif algorithm == "cost_scaled_partition_matroid_lazy_greedy":
+            alg = CostScaledPartitionMatroidLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
+
+        elif algorithm == "cost_scaled_partition_matroid_scaled_lazy_greedy":
+            alg = CostScaledPartitionMatroidScaledLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
+
         else:
             self.logger.info("Algorithm is not implemented")
 
