@@ -166,29 +166,52 @@ class FreelancerData(object):
         self.num_common_skills = num_common_skills
         self.num_popular_skills = num_popular_skills
 
-    def assign_ground_set_to_random_partitions(self, num_of_partitions):
+    def assign_ground_set_to_random_partitions(self, num_of_partitions, cardinality_constraint):
         """
         Assigns the ground set elements to partitions uniformly at random
 
         :param num_of_partitions:
         """
-        self.partitions = defaultdict(list,{k:[] for k in range(0,num_of_partitions)})
+        print('In freelancer random partition.')
+        self.partitions = defaultdict(dict,{i:{'users':set(), 'k':cardinality_constraint} for i in range(0,num_of_partitions)})
         partition_ids = np.arange(start=0, stop=num_of_partitions, step=1)
 
         for user_id in self.E:
             p_id = np.random.choice(a = partition_ids)
-            self.partitions[p_id].append(user_id)
+            self.partitions[p_id]['users'].add(user_id)
 
-    def assign_ground_set_to_salary_partitions(self, num_of_partitions):
+    def split(self, a, n):
+        k, m = divmod(len(a), n)
+        return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+    def assign_ground_set_to_equi_salary_partitions(self, num_of_partitions, cardinality_constraint):
         """
         Assigns the ground set elements to partitions based on their salary
 
         :param num_of_partitions:
         """
-        costs = []
+        print('In freelancer salary partition.')
+        costs = set()
         for user_id in self.E:
-            costs.append(self.cost_vector[user_id])
-        print('Costs:',sorted(costs))
+            costs.add(self.cost_vector[user_id])
+        sorted_costs = sorted(list(costs))
+        # each cost is a partition
+        if len(sorted_costs) <= num_of_partitions:
+            self.partitions = defaultdict(dict,{i:{'users':set(), 'k':cardinality_constraint} for i in sorted_costs})
+        else:
+            partition_costs = list(self.split(sorted_costs, num_of_partitions))
+            self.partitions = defaultdict(dict,{i[-1]:{'users':set(), 'k':cardinality_constraint} for i in partition_costs})
+
+        for user_id in self.E:
+            user_cost = self.cost_vector[user_id] 
+            min_val = 0
+            for cost, users in self.partitions.items():
+                max_val = cost
+                if user_cost > min_val and user_cost <= max_val:
+                    self.partitions[max_val]['users'].add(user_id)
+                    break
+                min_val = max_val
+
     @staticmethod
     # @jit(nopython=True)
     def submodular_func_jit(sol, skills_covered, skills_matrix):

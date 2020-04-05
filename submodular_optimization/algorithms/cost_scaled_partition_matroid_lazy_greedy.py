@@ -67,6 +67,24 @@ class CostScaledPartitionMatroidLazyGreedy(object):
             # Multiplying inserted element with -1 to convert to min heap to max
             heappush(self.H, (-1 * new_scaled_gain, idx))
 
+    def scaled_greedy_criterion(self, skills_covered, e):
+        """
+        Calculates the contribution of element e to greedy solution
+        :param sol:
+        :param e:
+        :return greedy_contrib:
+        """
+        # Weight scaling is constant
+        p_id = self.inverse_partition[e]
+        if self.partitions[p_id]['k'] == 0:
+            return -float("inf")
+
+        rho = 2
+        marginal_gain = self.calc_marginal_gain(skills_covered, e)
+        weighted_cost = rho * self.cost_func([e])
+        greedy_contrib = marginal_gain - weighted_cost
+        return greedy_contrib
+        
     def original_greedy_criterion(self, skills_covered, e):
         """
         Calculates the contribution of element e to greedy solution
@@ -74,6 +92,9 @@ class CostScaledPartitionMatroidLazyGreedy(object):
         :param e:
         :return greedy_contrib:
         """
+        p_id = self.inverse_partition[e]
+        if self.partitions[p_id]['k'] == 0:
+            return -float("inf")
         # No weight scaling
         rho = 1
         marginal_gain = self.calc_marginal_gain(skills_covered, e)
@@ -140,6 +161,7 @@ class CostScaledPartitionMatroidLazyGreedy(object):
                 continue
 
         return None
+
     def inverse_index(self):
         """
         Creates an inverse index where the key is the user and the value 
@@ -160,11 +182,6 @@ class CostScaledPartitionMatroidLazyGreedy(object):
         """
         p_id = self.inverse_partition[greedy_element]
         self.partitions[p_id]['k'] -= 1
-        if self.partitions[p_id]['k'] == 0:
-            self.N = self.N - self.partitions[p_id]['users']
-            del self.partitions[p_id]
-        else:
-            self.N.remove(greedy_element)
 
     def run(self):
         """
@@ -183,7 +200,7 @@ class CostScaledPartitionMatroidLazyGreedy(object):
         # Initialize the max heap for a given value of ks
         self.initialize_max_heap()
 
-        for i in range(1, len(self.N) + 1):
+        for i in range(1, len(self.E) + 1):
             if not self.N:
                 break
             # Greedy element decided wrt scaled objective
@@ -192,7 +209,7 @@ class CostScaledPartitionMatroidLazyGreedy(object):
             if greedy_element not in self.N:
                 continue
             # If an element is returned it is added to the solution wrt the original objective
-            if greedy_element and self.original_greedy_criterion(self.skills_covered, greedy_element) >= 0:
+            if greedy_element and self.scaled_greedy_criterion(self.skills_covered, greedy_element) >= 0:
                 curr_sol.append(greedy_element)
                 submodular_gain, self.skills_covered = self.submodular_func(self.skills_covered, [greedy_element])
                 curr_val += submodular_gain

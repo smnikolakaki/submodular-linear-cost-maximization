@@ -63,7 +63,7 @@ class Experiment00(object):
         user_sample_ratios = [0.001,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1]
         seeds = [i for i in range(6,11)]
 
-        sampling_epsilon_values = [0.01]
+        sampling_epsilon_values = [0.1,0.05,0.01,0.005]
 
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
@@ -77,7 +77,7 @@ class Experiment00(object):
                 self.logger.info("Experiment for user sample ratio: {} and scaling factor: {} and seed: {}".format(user_sample_ratio,scaling_factor,seed))
 
                 # Load dataset
-                data = self.data_provider.read_freelancer_data_obj()
+                data = self.data_provider.read_guru_data_obj()
                 config = self.config.copy()
                 alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
                                     rare_threshold,popular_threshold, user_sample_ratio, seed)
@@ -93,18 +93,18 @@ class Experiment00(object):
 
                 self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
 
-                # Distorted greedy - ICML
-                start = timer()
-                result = alg.run(config, data, "distorted_greedy",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio, seed, None)
-                end = timer()
-                result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",None,end - start))
-                results.append(result)
+                # # Distorted greedy - ICML
+                # start = timer()
+                # result = alg.run(config, data, "distorted_greedy",
+                #      None, None, scaling_factor, num_sampled_skills,
+                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #      user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",None,end - start))
+                # results.append(result)
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
 
                 # Cost scaled greedy
                 start = timer()
@@ -132,49 +132,61 @@ class Experiment00(object):
 
                 self.logger.info("\n")
 
-                # Unconstrained Linear 
-                start = timer()
-                result = alg.run(config, data, "unconstrained_linear",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio, seed, None)
-                end = timer()
-                result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_linear",None,end - start))
-                results.append(result)
+                # # Unconstrained Linear 
+                # start = timer()
+                # result = alg.run(config, data, "unconstrained_linear",
+                #      None, None, scaling_factor, num_sampled_skills,
+                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #      user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_linear",None,end - start))
+                # results.append(result)
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
 
-                # Unconstrained distorted greedy
-                start = timer()
-                result = alg.run(config, data, "unconstrained_distorted_greedy",
-                    None, None, scaling_factor, num_sampled_skills,
-                    rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                    user_sample_ratio, seed, None)
-                end = timer()
-                result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_distorted_greedy",None,end - start))
-                results.append(result)
+                # # Unconstrained distorted greedy
+                # start = timer()
+                # result = alg.run(config, data, "unconstrained_distorted_greedy",
+                #     None, None, scaling_factor, num_sampled_skills,
+                #     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #     user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_distorted_greedy",None,end - start))
+                # results.append(result)
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
 
-                # Stochastic distorted greedy
-                for sample_epsilon in sampling_epsilon_values:
-                    config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-                    result = alg.run(config, data, "stochastic_distorted_greedy",
-                         sample_epsilon, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio, seed, None)
-                    end = timer()
-                    result['runtime'] = end - start
-                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",None,end - start))
-                    results.append(result)
+                # # Stochastic distorted greedy
+                # for sample_epsilon in sampling_epsilon_values:
+                #     start = timer()
+                #     config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                #     result = alg.run(config, data, "stochastic_distorted_greedy",
+                #          sample_epsilon, None, scaling_factor, num_sampled_skills,
+                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #          user_sample_ratio, seed, None)
+                #     end = timer()
+                #     result['runtime'] = end - start
+                #     self.logger.info("Algorithm: {} and epsilon: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",sample_epsilon,None,end - start))
+                #     results.append(result)
                 
-                self.logger.info("\n")
+                # self.logger.info("\n")
+
+                # # Baseline top k
+                # start = timer()
+                # result = alg.run(config, data, "baseline_topk",
+                #      None, None, scaling_factor, num_sampled_skills,
+                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #      user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk",None,end - start))
+                # results.append(result)
 
         self.logger.info("Finished experiment 00")
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_00_freelancer.csv")
+        self.data_exporter.export_csv_file(df, "experiment_00_guru_pop01_rare01_cost_scaled.csv")
         self.logger.info("Exported experiment_00 results")

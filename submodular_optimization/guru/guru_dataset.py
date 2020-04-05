@@ -75,6 +75,7 @@ class GuruData(object):
         :param fraction:
         :return:
         """
+        print('In guru.')
         if fraction < 1.0:
             num_sampled_users = int(fraction * self.num_users)
             sampled_users = np.random.choice(self.num_users, size=num_sampled_users, replace=False)
@@ -169,13 +170,13 @@ class GuruData(object):
         self.num_common_skills = num_common_skills
         self.num_popular_skills = num_popular_skills
 
-    def assign_ground_set_to_random_partitions(self, num_of_partitions):
+    def assign_ground_set_to_random_partitions(self, num_of_partitions, cardinality_constraint):
         """
         Assigns the ground set elements to partitions uniformly at random
 
         :param num_of_partitions:
         """
-        self.partitions = defaultdict(dict,{i:{'users':set(), 'k':1} for i in range(0,num_of_partitions)})
+        self.partitions = defaultdict(dict,{i:{'users':set(), 'k':cardinality_constraint} for i in range(0,num_of_partitions)})
         partition_ids = np.arange(start=0, stop=num_of_partitions, step=1)
 
         for user_id in self.E:
@@ -186,22 +187,23 @@ class GuruData(object):
         k, m = divmod(len(a), n)
         return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
-    def assign_ground_set_to_equi_salary_partitions(self, num_of_partitions):
+    def assign_ground_set_to_equi_salary_partitions(self, num_of_partitions, cardinality_constraint):
         """
         Assigns the ground set elements to partitions based on their salary
 
         :param num_of_partitions:
         """
+        print('In  salary.')
         costs = set()
         for user_id in self.E:
             costs.add(self.cost_vector[user_id])
         sorted_costs = sorted(list(costs))
         # each cost is a partition
         if len(sorted_costs) <= num_of_partitions:
-            self.partitions = defaultdict(dict,{i:{'users':set(), 'k':1} for i in sorted_costs})
+            self.partitions = defaultdict(dict,{i:{'users':set(), 'k':cardinality_constraint} for i in sorted_costs})
         else:
             partition_costs = list(self.split(sorted_costs, num_of_partitions))
-            self.partitions = defaultdict(dict,{i[-1]:{'users':set(), 'k':1} for i in partition_costs})
+            self.partitions = defaultdict(dict,{i[-1]:{'users':set(), 'k':cardinality_constraint} for i in partition_costs})
 
         for user_id in self.E:
             user_cost = self.cost_vector[user_id] 

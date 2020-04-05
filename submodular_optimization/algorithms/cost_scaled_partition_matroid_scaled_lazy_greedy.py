@@ -74,6 +74,9 @@ class CostScaledPartitionMatroidScaledLazyGreedy(object):
         :param e:
         :return greedy_contrib:
         """
+        p_id = self.inverse_partition[e]
+        if self.partitions[p_id]['k'] == 0:
+            return -float("inf")
         # No weight scaling
         rho = 1
         marginal_gain = self.calc_marginal_gain(skills_covered, e)
@@ -156,11 +159,6 @@ class CostScaledPartitionMatroidScaledLazyGreedy(object):
         """
         p_id = self.inverse_partition[greedy_element]
         self.partitions[p_id]['k'] -= 1
-        if self.partitions[p_id]['k'] == 0:
-            self.N = self.N - self.partitions[p_id]['users']
-            del self.partitions[p_id]
-        else:
-            self.N.remove(greedy_element)
 
     def run(self):
         """
@@ -179,7 +177,7 @@ class CostScaledPartitionMatroidScaledLazyGreedy(object):
         # Initialize the max heap for a given value of ks
         self.initialize_max_heap()
 
-        for i in range(1, len(self.N) + 1):
+        for i in range(1, len(self.E) + 1):
             if not self.N:
                 break
             # Greedy element decided wrt scaled objective

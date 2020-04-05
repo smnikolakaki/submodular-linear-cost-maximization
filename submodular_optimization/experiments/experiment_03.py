@@ -61,10 +61,10 @@ class Experiment03(object):
         rare_threshold = self.expt_config['rare_threshold']
 
         user_sample_ratios = [0.05,0.1]
-        seeds = [i for i in range(6,11)]
+        seeds = [i for i in range(6,10)]
 
-        sampling_epsilon_values_stochastic = [0.01]
-        error_epsilon_values_scaled_threshold = [0.1]
+        sampling_epsilon_values_stochastic = [0.1,0.05,0.01,0.005]
+        error_epsilon_values_scaled_threshold = [0.2,0.15,0.1,0.05]
 
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
@@ -88,41 +88,41 @@ class Experiment03(object):
                 # Total number of elements
                 n = len(data.E)
 
-                # Distorted Greedy
-                total_runtime = 0
-                for k in range(1,n+1):
-                    # Run algorithm
-                    start = timer()
-                    result = alg.run(self.config, data, "distorted_greedy",
-                         None, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio, seed, k)
-                    end = timer()
-                    print('Previous runtime:',total_runtime,'new runtime:',end - start)
-                    total_runtime += end - start
-                    result['runtime'] = total_runtime
-                    results.append(result)
-                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",k,total_runtime))
+                # # Distorted Greedy
+                # total_runtime = 0
+                # for k in range(1,n+1):
+                #     # Run algorithm
+                #     start = timer()
+                #     result = alg.run(self.config, data, "distorted_greedy",
+                #          None, None, scaling_factor, num_sampled_skills,
+                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #          user_sample_ratio, seed, k)
+                #     end = timer()
+                #     print('Previous runtime:',total_runtime,'new runtime:',end - start)
+                #     total_runtime += end - start
+                #     result['runtime'] = total_runtime
+                #     results.append(result)
+                #     self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",k,total_runtime))
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
 
-                # Stochastic Distorted Greedy
-                total_runtime = 0
-                for k in range(1,n+1):
-                    for sample_epsilon in sampling_epsilon_values_stochastic:
-                        # Run algorithm
-                        start = timer()
-                        result = alg.run(config, data, "stochastic_distorted_greedy",
-                             sample_epsilon, None, scaling_factor, num_sampled_skills,
-                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio, seed, k) 
-                        end = timer()
-                        total_runtime += end - start
-                        result['runtime'] = total_runtime
-                        results.append(result)
-                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",k,total_runtime))
+                # # Stochastic Distorted Greedy
+                # total_runtime = 0
+                # for k in range(1,n+1):
+                #     for sample_epsilon in sampling_epsilon_values_stochastic:
+                #         # Run algorithm
+                #         start = timer()
+                #         result = alg.run(config, data, "stochastic_distorted_greedy",
+                #              sample_epsilon, None, scaling_factor, num_sampled_skills,
+                #              rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #              user_sample_ratio, seed, k) 
+                #         end = timer()
+                #         total_runtime += end - start
+                #         result['runtime'] = total_runtime
+                #         results.append(result)
+                #         self.logger.info("Algorithm: {} and epsilon: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",sample_epsilon,k,total_runtime))
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
 
                 # Cost Scaled Greedy   
                 # Run algorithm that creates greedy ordering
@@ -182,27 +182,45 @@ class Experiment03(object):
 
                 self.logger.info("\n")
 
-                # Scaled Single Threshold Greedy
-                total_runtime = 0
-                for k in range(1,n+1):
-                    for error_epsilon in error_epsilon_values_scaled_threshold:
-                        # Run algorithm
-                        start = timer()
-                        result = alg.run(self.config, data, "scaled_single_threshold_greedy",
-                             None, error_epsilon, scaling_factor, num_sampled_skills,
-                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                             user_sample_ratio, seed, k)
-                        end = timer()
-                        total_runtime += end - start
-                        result['runtime'] = total_runtime
-                        results.append(result)
-                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("scaled_single_threshold_greedy",k,total_runtime))
+                # # Scaled Single Threshold Greedy
+                # total_runtime = 0
+                # for k in range(1,n+1):
+                #     for error_epsilon in error_epsilon_values_scaled_threshold:
+                #         # Run algorithm
+                #         start = timer()
+                #         result = alg.run(self.config, data, "scaled_single_threshold_greedy",
+                #              None, error_epsilon, scaling_factor, num_sampled_skills,
+                #              rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #              user_sample_ratio, seed, k)
+                #         end = timer()
+                #         total_runtime += end - start
+                #         result['runtime'] = total_runtime
+                #         results.append(result)
+                #         self.logger.info("Algorithm: {} and epsilon: {} and k: {} and runtime: {}".format("scaled_single_threshold_greedy",error_epsilon,k,total_runtime))
 
-                self.logger.info("\n")
+                # self.logger.info("\n")
+
+                # # Baseline Top k 
+                # total_runtime = 0              
+                # for k in range(1,n+1):
+                #     # Run algorithm
+                #     start = timer()
+                #     result = alg.run(self.config, data, "baseline_topk",
+                #          None, None, scaling_factor, num_sampled_skills,
+                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #          user_sample_ratio, seed, k)
+                #     end = timer()
+                #     total_runtime += end - start
+                #     result['runtime'] = total_runtime
+                #     results.append(result)
+                #     self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk",k,total_runtime))
+
+                # self.logger.info("\n")
+
 
         self.logger.info("Finished experiment 03")
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_03_freelancer.csv")
+        # self.data_exporter.export_csv_file(df, "experiment_03_freelancer_pop01_rare01_cost_scaled.csv")
         self.logger.info("Exported experiment_03 results")

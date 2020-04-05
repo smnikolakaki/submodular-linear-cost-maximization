@@ -48,6 +48,10 @@ class CostScaledPartitionMatroidGreedy(object):
         :return greedy_contrib:
         """
         # Weight scaling is constant
+        p_id = self.inverse_partition[e]
+        if self.partitions[p_id]['k'] == 0:
+            return -float("inf")
+
         rho = 2
         marginal_gain = self.calc_marginal_gain(skills_covered, e)
         weighted_cost = rho * self.cost_func([e])
@@ -62,6 +66,9 @@ class CostScaledPartitionMatroidGreedy(object):
         :return greedy_contrib:
         """
         # No weight scaling
+        p_id = self.inverse_partition[e]
+        if self.partitions[p_id]['k'] == 0:
+            return -float("inf")
         rho = 1
         marginal_gain = self.calc_marginal_gain(skills_covered, e)
         weighted_cost = rho * self.cost_func([e])
@@ -98,14 +105,7 @@ class CostScaledPartitionMatroidGreedy(object):
         :param greedy_element:
         """
         p_id = self.inverse_partition[greedy_element]
-        # print('Before:',self.partitions[p_id])
         self.partitions[p_id]['k'] -= 1
-        # print('After:',self.partitions[p_id])
-        if self.partitions[p_id]['k'] == 0:
-            self.N = self.N - self.partitions[p_id]['users']
-            del self.partitions[p_id]
-        else:
-            self.N.remove(greedy_element)
 
     def run(self):
         """
@@ -121,14 +121,13 @@ class CostScaledPartitionMatroidGreedy(object):
         self.N = self.E.copy()
         # Initialize the submodular function coverage skills
         self.skills_covered = self.init_submodular_func_coverage()
-
-        for i in range(0, len(self.N)):
+        for i in range(0, len(self.E)):
             if not self.N:
                 break
             # Greedy element decided wrt scaled objective
             greedy_element = self.find_greedy_element(self.N, self.skills_covered)
             # Element is added to the solution wrt the original objective
-            if self.original_greedy_criterion(self.skills_covered, greedy_element) >= 0:
+            if self.scaled_greedy_criterion(self.skills_covered, greedy_element) >= 0:
                 curr_sol.append(greedy_element)
                 submodular_gain, self.skills_covered = self.submodular_func(self.skills_covered, [greedy_element])
                 curr_val += submodular_gain
@@ -138,6 +137,6 @@ class CostScaledPartitionMatroidGreedy(object):
 
         # Computing the original objective value for current solution
         curr_val = curr_val - self.cost_func(curr_sol)
-        self.logger.info("Best solution: {}\nBest value: {}".format(curr_sol, curr_val))
+        self.logger.info("Best solution: {}\nBest value: {}\ni: {}".format(curr_sol, curr_val, i))
 
         return curr_sol

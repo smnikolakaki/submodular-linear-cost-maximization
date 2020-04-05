@@ -138,15 +138,21 @@ class ScaledSingleThresholdGreedy(object):
         Sv_skills_covered = S[v]['skills_covered']
         Sv_value = S[v]['value']
 
+        if self.k == 0:
+            return S
+
+        # Threshold tau wrt the value of the scaled objective - from original paper
         denominator = self.k - len(Sv_solution)
         if denominator == 0:
             return S
+        nominator = (v/2) - self.calc_scaled_objective(Sv_skills_covered, [], Sv_solution, Sv_value)
+        tau = nominator / denominator
+
+        # tau = (1/self.k)*((1/2)*(3 - np.sqrt(5))*Sv_value - self.cost_func(Sv_solution))
 
         # Marginal gain wrt scaled objective
         marg_gain = self.scaled_greedy_criterion(Sv_skills_covered, e)
-        # Threshold tau wrt the value of the scaled objective
-        nominator = (v/2) - self.calc_scaled_objective(Sv_skills_covered, [], Sv_solution, Sv_value)
-        tau = nominator / denominator
+        
         if tau < 0 :
             tau = 0
         if marg_gain >= tau and len(Sv_solution) < self.k:
@@ -177,7 +183,7 @@ class ScaledSingleThresholdGreedy(object):
         :param:
         :return:
         """
-
+        print(self.epsilon)
         curr_sol = []
         curr_val = 0
         S = collections.defaultdict(list)

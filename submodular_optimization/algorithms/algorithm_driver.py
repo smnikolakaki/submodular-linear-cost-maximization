@@ -16,6 +16,8 @@ from algorithms.cost_scaled_partition_matroid_scaled_lazy_greedy import CostScal
 from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.scaled_single_threshold_greedy import ScaledSingleThresholdGreedy
+from algorithms.baseline_topk import BaselineTopk
+from algorithms.baseline_topk_matroid import BaselineTopkMatroid
 from ordered_set import OrderedSet
 
 class AlgorithmDriver(object):
@@ -41,14 +43,14 @@ class AlgorithmDriver(object):
                                                     popular_sample_fraction, rare_threshold,
                                                     popular_threshold, user_sample_ratio)
 
-    def create_partitions(self, data, num_of_partitions, partition_type):
+    def create_partitions(self, data, num_of_partitions, partition_type, cardinality_constraint):
         """
         create the partition matroids
         """
         if partition_type == "random":
-            data.assign_ground_set_to_random_partitions(num_of_partitions)
+            data.assign_ground_set_to_random_partitions(num_of_partitions, cardinality_constraint)
         else:
-            data.assign_ground_set_to_equi_salary_partitions(num_of_partitions)
+            data.assign_ground_set_to_equi_salary_partitions(num_of_partitions, cardinality_constraint)
 
     def run(self, config, data, algorithm, sample_epsilon, error_epsilon, scaling_factor, num_sampled_skills,
             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold, user_sample_ratio, seed, k):
@@ -97,6 +99,9 @@ class AlgorithmDriver(object):
             config['algorithms']['scaled_single_threshold_greedy_config']['epsilon'] = error_epsilon
             alg = ScaledSingleThresholdGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
         
+        elif algorithm == "baseline_topk":
+            alg = BaselineTopk(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
+
         elif algorithm == "cost_scaled_partition_matroid_greedy":
             alg = CostScaledPartitionMatroidGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
 
@@ -108,6 +113,9 @@ class AlgorithmDriver(object):
 
         elif algorithm == "cost_scaled_partition_matroid_scaled_lazy_greedy":
             alg = CostScaledPartitionMatroidScaledLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
+
+        elif algorithm == "baseline_topk_matroid":
+            alg = BaselineTopkMatroid(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
 
         else:
             self.logger.info("Algorithm is not implemented")

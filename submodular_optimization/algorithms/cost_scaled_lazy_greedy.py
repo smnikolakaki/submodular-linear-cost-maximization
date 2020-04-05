@@ -128,6 +128,20 @@ class CostScaledLazyGreedy(object):
         # If heap empties and there is no element satisfying the conditions return None
         return None
 
+    def scaled_greedy_criterion(self, skills_covered, e):
+        """
+        Calculates the contribution of element e to greedy solution
+        :param sol:
+        :param e:
+        :return greedy_contrib:
+        """
+        # Weight scaling is constant
+        rho = 2
+        marginal_gain = self.calc_marginal_gain(skills_covered, e)
+        weighted_cost = rho * self.cost_func([e])
+        greedy_contrib = marginal_gain - weighted_cost
+        return greedy_contrib
+        
     def original_greedy_criterion(self, skills_covered, e):
         """
         Calculates the contribution of element e to greedy solution
@@ -164,7 +178,7 @@ class CostScaledLazyGreedy(object):
             greedy_element = self.find_lazy_exact_greedy_eval_element(self.skills_covered, i)
 
             # If an element is returned it is added to the solution wrt the original objective
-            if greedy_element and self.original_greedy_criterion(self.skills_covered, greedy_element) >= 0:
+            if greedy_element and self.scaled_greedy_criterion(self.skills_covered, greedy_element) >= 0:
                 # print('Appending to solution:',curr_sol,'element:',greedy_element)
                 curr_sol.append(greedy_element)
                 submodular_gain, self.skills_covered = self.submodular_func(self.skills_covered, [greedy_element])
