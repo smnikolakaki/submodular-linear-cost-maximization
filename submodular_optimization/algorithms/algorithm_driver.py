@@ -7,12 +7,12 @@ from copy import deepcopy
 from timeit import default_timer as timer
 from algorithms.distorted_greedy import DistortedGreedy
 from algorithms.cost_scaled_greedy import CostScaledGreedy
+from algorithms.greedy import Greedy
 from algorithms.unconstrained_linear import UnconstrainedLinear
 from algorithms.cost_scaled_lazy_greedy import CostScaledLazyGreedy
 from algorithms.cost_scaled_partition_matroid_greedy import CostScaledPartitionMatroidGreedy
 from algorithms.partition_matroid_greedy import PartitionMatroidGreedy
 from algorithms.cost_scaled_partition_matroid_lazy_greedy import CostScaledPartitionMatroidLazyGreedy
-from algorithms.cost_scaled_partition_matroid_scaled_lazy_greedy import CostScaledPartitionMatroidScaledLazyGreedy
 from algorithms.stochastic_distorted_greedy import StochasticDistortedGreedy
 from algorithms.unconstrained_distorted_greedy import UnconstrainedDistortedGreedy
 from algorithms.scaled_single_threshold_greedy import ScaledSingleThresholdGreedy
@@ -82,6 +82,9 @@ class AlgorithmDriver(object):
         elif algorithm == "cost_scaled_greedy":
             alg = CostScaledGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
 
+        elif algorithm == "greedy":
+            alg = Greedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, k)
+
         elif algorithm == "unconstrained_linear":
             alg = UnconstrainedLinear(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E)
 
@@ -110,9 +113,6 @@ class AlgorithmDriver(object):
 
         elif algorithm == "cost_scaled_partition_matroid_lazy_greedy":
             alg = CostScaledPartitionMatroidLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
-
-        elif algorithm == "cost_scaled_partition_matroid_scaled_lazy_greedy":
-            alg = CostScaledPartitionMatroidScaledLazyGreedy(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))
 
         elif algorithm == "baseline_topk_matroid":
             alg = BaselineTopkMatroid(config, data.init_submodular_func_coverage_caching, data.submodular_func_caching, data.cost_func, data.E, deepcopy(data.partitions))

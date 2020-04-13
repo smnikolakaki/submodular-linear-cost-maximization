@@ -71,7 +71,7 @@ class Experiment04(object):
 
         num_sampled_skills = 50
         rare_sample_fraction = 0.1
-        popular_sample_fraction = 0.1
+        popular_sample_fraction = 0.8
         scaling_factor = 800
 
         alg = AlgorithmDriver()
@@ -83,7 +83,7 @@ class Experiment04(object):
                         self.logger.info("Experiment for user sample ratio: {} and scaling factor: {} and seed: {} and cardinality constraint:{} and num of partitions:{} ".format(user_sample_ratio,scaling_factor,seed,cardinality_constraint,num_of_partition))
 
                         # Load dataset
-                        data = self.data_provider.read_freelancer_data_obj()
+                        data = self.data_provider.read_guru_data_obj()
                         config = self.config.copy()
                         # Creating the ground set of users
                         alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
@@ -93,20 +93,20 @@ class Experiment04(object):
 
                         self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
                         
-                        # # Partition matroid greedy
-                        # start = timer()
-                        # result = alg.run(config, data, "partition_matroid_greedy",
-                        #      None, None, scaling_factor, num_sampled_skills,
-                        #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                        #      user_sample_ratio, seed, None)
-                        # end = timer()
-                        # result['runtime'] = end - start
-                        # result['cardinality_constraint'] = cardinality_constraint
-                        # result['num_of_partitions'] = num_of_partition
-                        # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("partition_matroid_greedy",None,end - start))
-                        # results.append(result)
+                        # Partition matroid greedy
+                        start = timer()
+                        result = alg.run(config, data, "partition_matroid_greedy",
+                             None, None, scaling_factor, num_sampled_skills,
+                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                             user_sample_ratio, seed, None)
+                        end = timer()
+                        result['runtime'] = end - start
+                        result['cardinality_constraint'] = cardinality_constraint
+                        result['num_of_partitions'] = num_of_partition
+                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("partition_matroid_greedy",None,end - start))
+                        results.append(result)
 
-                        # self.logger.info("\n")
+                        self.logger.info("\n")
 
                         # Cost scaled partition matroid greedy
                         start = timer()
@@ -139,25 +139,25 @@ class Experiment04(object):
                         self.logger.info("\n")
 
 
-                        # # Baseline Top k
-                        # start = timer()
-                        # result = alg.run(config, data, "baseline_topk_matroid",
-                        #      None, None, scaling_factor, num_sampled_skills,
-                        #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                        #      user_sample_ratio, seed, None)
-                        # end = timer()
-                        # result['runtime'] = end - start
-                        # result['cardinality_constraint'] = cardinality_constraint
-                        # result['num_of_partitions'] = num_of_partition
-                        # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk_matroid",None,end - start))
-                        # results.append(result)
+                        # Baseline Top k
+                        start = timer()
+                        result = alg.run(config, data, "baseline_topk_matroid",
+                             None, None, scaling_factor, num_sampled_skills,
+                             rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                             user_sample_ratio, seed, None)
+                        end = timer()
+                        result['runtime'] = end - start
+                        result['cardinality_constraint'] = cardinality_constraint
+                        result['num_of_partitions'] = num_of_partition
+                        self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk_matroid",None,end - start))
+                        results.append(result)
 
-                        # self.logger.info("\n")
+                        self.logger.info("\n")
 
 
         self.logger.info("Finished experiment 04")
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_04_freelancer_salary_pop01_rare01_cost_scaled.csv")
+        self.data_exporter.export_csv_file(df, "experiment_04_guru_salary_pop08_rare01.csv")
         self.logger.info("Exported experiment 04 results")

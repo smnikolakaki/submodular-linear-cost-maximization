@@ -142,13 +142,13 @@ class ScaledSingleThresholdGreedy(object):
             return S
 
         # Threshold tau wrt the value of the scaled objective - from original paper
-        denominator = self.k - len(Sv_solution)
-        if denominator == 0:
-            return S
-        nominator = (v/2) - self.calc_scaled_objective(Sv_skills_covered, [], Sv_solution, Sv_value)
-        tau = nominator / denominator
+        # denominator = self.k - len(Sv_solution)
+        # if denominator == 0:
+        #     return S
+        # nominator = (v/2) - self.calc_scaled_objective(Sv_skills_covered, [], Sv_solution, Sv_value)
+        # tau = nominator / denominator
 
-        # tau = (1/self.k)*((1/2)*(3 - np.sqrt(5))*Sv_value - self.cost_func(Sv_solution))
+        tau = (1/self.k)*((1/2)*(3 - np.sqrt(5))*Sv_value - self.cost_func(Sv_solution))
 
         # Marginal gain wrt scaled objective
         marg_gain = self.scaled_greedy_criterion(Sv_skills_covered, e)

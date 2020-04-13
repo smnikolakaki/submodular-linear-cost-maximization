@@ -79,7 +79,7 @@ class Experiment02(object):
                 self.logger.info("Experiment for user sample ratio: {} and scaling factor: {} and seed: {}".format(user_sample_ratio,scaling_factor,seed))
 
                 # Load dataset
-                data = self.data_provider.read_guru_data_obj()
+                data = self.data_provider.read_freelancer_data_obj()
                 config = self.config.copy()
                 alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
                                     rare_threshold,popular_threshold, user_sample_ratio, seed)
@@ -118,33 +118,48 @@ class Experiment02(object):
 
                 # self.logger.info("\n")
 
-                # Cost Scaled Greedy              
+                # # Cost Scaled Greedy              
+                # for k in ks:
+                #     # Run algorithm
+                #     start = timer()
+                #     result = alg.run(self.config, data, "cost_scaled_greedy",
+                #          None, None, scaling_factor, num_sampled_skills,
+                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #          user_sample_ratio, seed, k)
+                #     end = timer()
+                #     result['runtime'] = end - start
+                #     results.append(result)
+                #     self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",k,end - start))
+
+                # self.logger.info("\n")
+
+                # # Cost scaled lazy exact greedy
+                # for k in ks:
+                #     # Run algorithm
+                #     start = timer()
+                #     result = alg.run(self.config, data, "cost_scaled_lazy_greedy",
+                #          None, None, scaling_factor, num_sampled_skills,
+                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #          user_sample_ratio, seed, k)
+                #     end = timer()
+                #     result['runtime'] = end - start
+                #     results.append(result)
+                #     self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",k,end - start))
+
+                # self.logger.info("\n")
+
+                # Greedy              
                 for k in ks:
                     # Run algorithm
                     start = timer()
-                    result = alg.run(self.config, data, "cost_scaled_greedy",
+                    result = alg.run(self.config, data, "greedy",
                          None, None, scaling_factor, num_sampled_skills,
                          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                          user_sample_ratio, seed, k)
                     end = timer()
                     result['runtime'] = end - start
                     results.append(result)
-                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",k,end - start))
-
-                self.logger.info("\n")
-
-                # Cost scaled lazy exact greedy
-                for k in ks:
-                    # Run algorithm
-                    start = timer()
-                    result = alg.run(self.config, data, "cost_scaled_lazy_greedy",
-                         None, None, scaling_factor, num_sampled_skills,
-                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                         user_sample_ratio, seed, k)
-                    end = timer()
-                    result['runtime'] = end - start
-                    results.append(result)
-                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",k,end - start))
+                    self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("greedy",k,end - start))
 
                 self.logger.info("\n")
 
@@ -184,5 +199,5 @@ class Experiment02(object):
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_02_guru_pop01_rare01_cost_scaled.csv")
+        self.data_exporter.export_csv_file(df, "experiment_02_freelancer_pop01_rare01_greedy.csv")
         self.logger.info("Exported experiment_02 results")

@@ -77,7 +77,7 @@ class Experiment00(object):
                 self.logger.info("Experiment for user sample ratio: {} and scaling factor: {} and seed: {}".format(user_sample_ratio,scaling_factor,seed))
 
                 # Load dataset
-                data = self.data_provider.read_guru_data_obj()
+                data = self.data_provider.read_freelancer_data_obj()
                 config = self.config.copy()
                 alg.create_sample(config, data, num_sampled_skills, rare_sample_fraction, popular_sample_fraction, 
                                     rare_threshold,popular_threshold, user_sample_ratio, seed)
@@ -106,28 +106,41 @@ class Experiment00(object):
 
                 # self.logger.info("\n")
 
-                # Cost scaled greedy
+                # # Cost scaled greedy
+                # start = timer()
+                # result = alg.run(config, data, "cost_scaled_greedy",
+                #      None, None, scaling_factor, num_sampled_skills,
+                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #      user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",None,end - start))
+                # results.append(result)
+
+                # self.logger.info("\n")
+
+                # # Cost scaled lazy exact greedy
+                # start = timer()
+                # result = alg.run(config, data, "cost_scaled_lazy_greedy",
+                #      None, None, scaling_factor, num_sampled_skills,
+                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                #      user_sample_ratio, seed, None)
+                # end = timer()
+                # result['runtime'] = end - start
+                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",None,end - start))
+                # results.append(result)
+
+                # self.logger.info("\n")
+
+                # Greedy
                 start = timer()
-                result = alg.run(config, data, "cost_scaled_greedy",
+                result = alg.run(config, data, "greedy",
                      None, None, scaling_factor, num_sampled_skills,
                      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
                      user_sample_ratio, seed, None)
                 end = timer()
                 result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",None,end - start))
-                results.append(result)
-
-                self.logger.info("\n")
-
-                # Cost scaled lazy exact greedy
-                start = timer()
-                result = alg.run(config, data, "cost_scaled_lazy_greedy",
-                     None, None, scaling_factor, num_sampled_skills,
-                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                     user_sample_ratio, seed, None)
-                end = timer()
-                result['runtime'] = end - start
-                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",None,end - start))
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("greedy",None,end - start))
                 results.append(result)
 
                 self.logger.info("\n")
@@ -188,5 +201,5 @@ class Experiment00(object):
 
         # Export results
         df = pd.DataFrame(results)
-        self.data_exporter.export_csv_file(df, "experiment_00_guru_pop01_rare01_cost_scaled.csv")
+        self.data_exporter.export_csv_file(df, "experiment_00_freelancer_pop01_rare01_greedy.csv")
         self.logger.info("Exported experiment_00 results")
