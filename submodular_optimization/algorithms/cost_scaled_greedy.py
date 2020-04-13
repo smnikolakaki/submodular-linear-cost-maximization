@@ -106,12 +106,9 @@ class CostScaledGreedy(object):
     
             # Element is added to the solution wrt the original objective
             if self.scaled_greedy_criterion(self.skills_covered, greedy_element) >= 0:
-                # print('Appending to solution:',curr_sol,'element:',greedy_element)
                 curr_sol.append(greedy_element)
                 submodular_gain, self.skills_covered = self.submodular_func(self.skills_covered, [greedy_element])
                 curr_val += submodular_gain
-                # print('Current submodular gain:',submodular_gain,'Indices with elements equal to zero:',np.where(self.skills_covered == 0)[0],'Number of indices:',len(np.where(self.skills_covered == 0)[0]))
-                # print()
 
         # Computing the original objective value for current solution
         curr_val = curr_val - self.cost_func(curr_sol)

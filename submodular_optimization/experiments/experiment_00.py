@@ -93,44 +93,44 @@ class Experiment00(object):
 
                 self.logger.info("Scaling factor for submodular function is: {}".format(scaling_factor))
 
-                # # Distorted greedy - ICML
-                # start = timer()
-                # result = alg.run(config, data, "distorted_greedy",
-                #      None, None, scaling_factor, num_sampled_skills,
-                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #      user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",None,end - start))
-                # results.append(result)
+                # Distorted greedy - ICML
+                start = timer()
+                result = alg.run(config, data, "distorted_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("distorted_greedy",None,end - start))
+                results.append(result)
 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
-                # # Cost scaled greedy
-                # start = timer()
-                # result = alg.run(config, data, "cost_scaled_greedy",
-                #      None, None, scaling_factor, num_sampled_skills,
-                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #      user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",None,end - start))
-                # results.append(result)
+                # Cost scaled greedy
+                start = timer()
+                result = alg.run(config, data, "cost_scaled_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_greedy",None,end - start))
+                results.append(result)
 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
-                # # Cost scaled lazy exact greedy
-                # start = timer()
-                # result = alg.run(config, data, "cost_scaled_lazy_greedy",
-                #      None, None, scaling_factor, num_sampled_skills,
-                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #      user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",None,end - start))
-                # results.append(result)
+                # Cost scaled lazy exact greedy
+                start = timer()
+                result = alg.run(config, data, "cost_scaled_lazy_greedy",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("cost_scaled_lazy_greedy",None,end - start))
+                results.append(result)
 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
                 # Greedy
                 start = timer()
@@ -145,57 +145,57 @@ class Experiment00(object):
 
                 self.logger.info("\n")
 
-                # # Unconstrained Linear 
-                # start = timer()
-                # result = alg.run(config, data, "unconstrained_linear",
-                #      None, None, scaling_factor, num_sampled_skills,
-                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #      user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_linear",None,end - start))
-                # results.append(result)
+                # Unconstrained Linear 
+                start = timer()
+                result = alg.run(config, data, "unconstrained_linear",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_linear",None,end - start))
+                results.append(result)
 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
-                # # Unconstrained distorted greedy
-                # start = timer()
-                # result = alg.run(config, data, "unconstrained_distorted_greedy",
-                #     None, None, scaling_factor, num_sampled_skills,
-                #     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #     user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_distorted_greedy",None,end - start))
-                # results.append(result)
+                # Unconstrained distorted greedy
+                start = timer()
+                result = alg.run(config, data, "unconstrained_distorted_greedy",
+                    None, None, scaling_factor, num_sampled_skills,
+                    rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                    user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("unconstrained_distorted_greedy",None,end - start))
+                results.append(result)
 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
-                # # Stochastic distorted greedy
-                # for sample_epsilon in sampling_epsilon_values:
-                #     start = timer()
-                #     config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
-                #     result = alg.run(config, data, "stochastic_distorted_greedy",
-                #          sample_epsilon, None, scaling_factor, num_sampled_skills,
-                #          rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #          user_sample_ratio, seed, None)
-                #     end = timer()
-                #     result['runtime'] = end - start
-                #     self.logger.info("Algorithm: {} and epsilon: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",sample_epsilon,None,end - start))
-                #     results.append(result)
+                # Stochastic distorted greedy
+                for sample_epsilon in sampling_epsilon_values:
+                    start = timer()
+                    config['algorithms']['stochastic_distorted_greedy_config']['epsilon'] = sample_epsilon
+                    result = alg.run(config, data, "stochastic_distorted_greedy",
+                         sample_epsilon, None, scaling_factor, num_sampled_skills,
+                         rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                         user_sample_ratio, seed, None)
+                    end = timer()
+                    result['runtime'] = end - start
+                    self.logger.info("Algorithm: {} and epsilon: {} and k: {} and runtime: {}".format("stochastic_distorted_greedy",sample_epsilon,None,end - start))
+                    results.append(result)
                 
-                # self.logger.info("\n")
+                self.logger.info("\n")
 
-                # # Baseline top k
-                # start = timer()
-                # result = alg.run(config, data, "baseline_topk",
-                #      None, None, scaling_factor, num_sampled_skills,
-                #      rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
-                #      user_sample_ratio, seed, None)
-                # end = timer()
-                # result['runtime'] = end - start
-                # self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk",None,end - start))
-                # results.append(result)
+                # Baseline top k
+                start = timer()
+                result = alg.run(config, data, "baseline_topk",
+                     None, None, scaling_factor, num_sampled_skills,
+                     rare_sample_fraction, popular_sample_fraction, rare_threshold, popular_threshold,
+                     user_sample_ratio, seed, None)
+                end = timer()
+                result['runtime'] = end - start
+                self.logger.info("Algorithm: {} and k: {} and runtime: {}".format("baseline_topk",None,end - start))
+                results.append(result)
 
         self.logger.info("Finished experiment 00")
 
